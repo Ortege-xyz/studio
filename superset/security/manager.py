@@ -79,8 +79,11 @@ from .register import OrtegeRegisterView
 
 if TYPE_CHECKING:
     from superset.common.query_context import QueryContext
-    from superset.connectors.base.models import BaseDatasource
-    from superset.connectors.sqla.models import RowLevelSecurityFilter, SqlaTable
+    from superset.connectors.sqla.models import (
+        BaseDatasource,
+        RowLevelSecurityFilter,
+        SqlaTable,
+    )
     from superset.models.core import Database
     from superset.models.dashboard import Dashboard
     from superset.models.sql_lab import Query
