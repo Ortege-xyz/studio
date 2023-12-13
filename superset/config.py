@@ -1425,6 +1425,7 @@ TALISMAN_ENABLED = utils.cast_to_boolean(os.environ.get("TALISMAN_ENABLED", True
 # If you want Talisman, how do you want it configured??
 TALISMAN_CONFIG = {
     "content_security_policy": {
+        "base-uri": ["'self'"],
         "default-src": [
             "'self'", 
             "https://*.clarity.ms", 
@@ -1466,6 +1467,7 @@ TALISMAN_CONFIG = {
 # React requires `eval` to work correctly in dev mode
 TALISMAN_DEV_CONFIG = {
     "content_security_policy": {
+        "base-uri": ["'self'"],
         "default-src": [
             "'self'", 
             "https://*.clarity.ms", 
