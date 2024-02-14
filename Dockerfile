@@ -104,6 +104,50 @@ EXPOSE ${SUPERSET_PORT}
 CMD ["/usr/bin/run-server.sh"]
 
 ######################################################################
+# Alerts and Reports image using Chrome...
+######################################################################
+FROM lean AS alerts-chrome
+
+USER root
+
+RUN --mount=target=/var/lib/apt/lists,type=cache \
+    --mount=target=/var/cache/apt,type=cache \
+    wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    apt-get install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb && \
+    rm -f google-chrome-stable_current_amd64.deb
+
+RUN export CHROMEDRIVER_VERSION=$(curl --silent https://chromedriver.storage.googleapis.com/LATEST_RELEASE_102) && \
+    wget -q https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip && \
+    unzip chromedriver_linux64.zip -d /usr/bin && \
+    chmod 755 /usr/bin/chromedriver && \
+    rm -f chromedriver_linux64.zip
+
+RUN pip install --no-cache gevent psycopg2 redis
+
+USER superset
+
+######################################################################
+# Alerts and Reports image using Firefox...
+######################################################################
+FROM lean AS alerts-firefox
+
+USER root
+
+RUN --mount=target=/var/lib/apt/lists,type=cache \
+    --mount=target=/var/cache/apt,type=cache \
+    apt-get install --no-install-recommends -y firefox-esr
+
+ENV GECKODRIVER_VERSION=0.29.0
+RUN wget -q https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER_VERSION}/geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz && \
+    tar -x geckodriver -zf geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz -O > /usr/bin/geckodriver && \
+    chmod 755 /usr/bin/geckodriver && \
+    rm geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz
+
+RUN pip install --no-cache gevent psycopg2 redis
+
+USER superset
+
+######################################################################
 # Dev image...
 ######################################################################
 FROM lean AS dev

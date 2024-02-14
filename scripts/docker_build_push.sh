@@ -122,6 +122,23 @@ docker buildx build --target lean \
   .
 
 #
+# Build the "lean" image with reports and alerts using Chrome driver
+#
+docker buildx build --target alerts-chrome \
+  $DOCKER_ARGS \
+  --cache-from=type=local,src=/tmp/superset \
+  --cache-to=type=local,ignore-error=true,dest=/tmp/superset \
+  -t "${REPO_NAME}:${SHA}-chrome" \
+  -t "${REPO_NAME}:${REFSPEC}-chrome" \
+  -t "${REPO_NAME}:${LATEST_TAG}-chrome" \
+  --platform linux/amd64 \
+  --label "sha=${SHA}" \
+  --label "built_at=$(date)" \
+  --label "target=lean" \
+  --label "build_actor=${GITHUB_ACTOR}" \
+  .
+
+#
 # Build the "lean310" image
 #
 docker buildx build --target lean \
