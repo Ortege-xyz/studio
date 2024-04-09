@@ -371,12 +371,12 @@ LANGUAGES = {}
 
 # Override the default d3 locale format
 # Default values are equivalent to
-# D3_FORMAT = {
-#     "decimal": ".",           # - decimal place string (e.g., ".").
-#     "thousands": ",",         # - group separator string (e.g., ",").
-#     "grouping": [3],          # - array of group sizes (e.g., [3]), cycled as needed.
-#     "currency": ["$", ""]     # - currency prefix/suffix strings (e.g., ["$", ""])
-# }
+D3_FORMAT = {
+    "decimal": ".",           # - decimal place string (e.g., ".").
+    "thousands": ",",         # - group separator string (e.g., ",").
+    "grouping": [3],          # - array of group sizes (e.g., [3]), cycled as needed.
+    "currency": ["$", "🪙" "₿", "🪙"]     # - currency prefix/suffix strings (e.g., ["$", ""])
+}
 # https://github.com/d3/d3-format/blob/main/README.md#formatLocale
 class D3Format(TypedDict, total=False):
     decimal: str
@@ -385,9 +385,9 @@ class D3Format(TypedDict, total=False):
     currency: list[str]
 
 
-D3_FORMAT: D3Format = {}
+# D3_FORMAT: D3Format = {}
 
-CURRENCIES = ["USD", "EUR", "GBP", "INR", "MXN", "JPY", "CNY"]
+CURRENCIES = ["USD", "AVAX", "BTC", "STX"]
 
 # ---------------------------------------------------
 # Feature flags
