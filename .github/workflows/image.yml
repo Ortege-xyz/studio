@@ -67,6 +67,9 @@ jobs:
       - name: "Checkout ${{ github.ref }} ( ${{ github.sha }} )"
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - id: auth
         uses: google-github-actions/auth@v2
         with:
@@ -82,14 +85,20 @@ jobs:
         run: |-
           gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
 
+        # NOTE(joseb): we use gcloud auth for docker login instead of using `docker login` command in build_docker.py script.
+        #              So we just set a dummy value for DOCKERHUB_TOKEN.
+      - name: Set container registry token
+        if: github.event_name == 'push'
+        run: |
+          echo "DOCKERHUB_TOKEN=dummy" >> $GITHUB_ENV
+
       - name: Build Docker Image
         shell: bash
         env:
           DOCKERHUB_REPO: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/ortege/studio
           # NOTE(joseb): we use gcloud auth for docker login instead of using `docker login` command in build_docker.py script.
-          #              So these 2 env vars are dummy.
+          #              So we just set a dummy value for DOCKERHUB_USER.
           DOCKERHUB_USER: dummy
-          DOCKERHUB_TOKEN: dummy
           MAIN_BRANCH: ortege
         run: |
           pip install click
