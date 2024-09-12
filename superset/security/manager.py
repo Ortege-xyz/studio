@@ -364,6 +364,10 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
         user = self.appbuilder.app.config["DORIS_USER"]
         password = self.appbuilder.app.config["DORIS_PASSWORD"]
 
+        if host is None or user is None or password is None:
+            logger.error("Invalid doris config.")
+            raise ValueError("Invalid doris config.")
+
         connection = connector.connect(
             host=host,
             port="9030",
