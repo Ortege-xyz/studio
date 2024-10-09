@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React from 'react';
 import fetchMock from 'fetch-mock';
 import {
   render,
@@ -194,6 +193,7 @@ describe('Rule modal', () => {
 
     const name = await screen.findByTestId('rule-name-test');
     expect(name).toHaveDisplayValue('rls 1');
+    userEvent.clear(name);
     userEvent.type(name, 'rls 2');
     expect(name).toHaveDisplayValue('rls 2');
 

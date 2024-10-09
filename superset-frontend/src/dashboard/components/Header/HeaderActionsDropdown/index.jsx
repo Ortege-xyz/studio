@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { PureComponent } from 'react';
+import { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { isEmpty } from 'lodash';
 import { connect } from 'react-redux';
@@ -35,6 +35,7 @@ import FilterScopeModal from 'src/dashboard/components/filterscope/FilterScopeMo
 import getDashboardUrl from 'src/dashboard/util/getDashboardUrl';
 import { getActiveFilters } from 'src/dashboard/util/activeDashboardFilters';
 import { getUrlParam } from 'src/utils/urlUtils';
+import { MenuKeys } from 'src/dashboard/types';
 
 const propTypes = {
   addSuccessToast: PropTypes.func.isRequired,
@@ -76,20 +77,6 @@ const defaultProps = {
   colorScheme: undefined,
   refreshLimit: 0,
   refreshWarning: null,
-};
-
-const MENU_KEYS = {
-  SAVE_MODAL: 'save-modal',
-  SHARE_DASHBOARD: 'share-dashboard',
-  REFRESH_DASHBOARD: 'refresh-dashboard',
-  AUTOREFRESH_MODAL: 'autorefresh-modal',
-  SET_FILTER_MAPPING: 'set-filter-mapping',
-  EDIT_PROPERTIES: 'edit-properties',
-  EDIT_CSS: 'edit-css',
-  DOWNLOAD_DASHBOARD: 'download-dashboard',
-  TOGGLE_FULLSCREEN: 'toggle-fullscreen',
-  MANAGE_EMBEDDED: 'manage-embedded',
-  MANAGE_EMAIL_REPORT: 'manage-email-report',
 };
 
 const mapStateToProps = state => ({
@@ -140,14 +127,14 @@ export class HeaderActionsDropdown extends PureComponent {
 
   handleMenuClick({ key }) {
     switch (key) {
-      case MENU_KEYS.REFRESH_DASHBOARD:
+      case MenuKeys.RefreshDashboard:
         this.props.forceRefreshAllCharts();
         this.props.addSuccessToast(t('Refreshing charts'));
         break;
-      case MENU_KEYS.EDIT_PROPERTIES:
+      case MenuKeys.EditProperties:
         this.props.showPropertiesModal();
         break;
-      case MENU_KEYS.TOGGLE_FULLSCREEN: {
+      case MenuKeys.ToggleFullscreen: {
         const url = getDashboardUrl({
           pathname: window.location.pathname,
           filters: getActiveFilters(),
@@ -157,7 +144,7 @@ export class HeaderActionsDropdown extends PureComponent {
         window.location.replace(url);
         break;
       }
-      case MENU_KEYS.MANAGE_EMBEDDED: {
+      case MenuKeys.ManageEmbedded: {
         this.props.manageEmbedded();
         break;
       }
@@ -217,7 +204,7 @@ export class HeaderActionsDropdown extends PureComponent {
       <Menu selectable={false} data-test="header-actions-menu" {...rest}>
         {!editMode && (
           <Menu.Item
-            key={MENU_KEYS.REFRESH_DASHBOARD}
+            key={MenuKeys.RefreshDashboard}
             data-test="refresh-dashboard-menu-item"
             disabled={isLoading}
             onClick={this.handleMenuClick}
@@ -227,7 +214,7 @@ export class HeaderActionsDropdown extends PureComponent {
         )}
         {!editMode && !isEmbedded && (
           <Menu.Item
-            key={MENU_KEYS.TOGGLE_FULLSCREEN}
+            key={MenuKeys.ToggleFullscreen}
             onClick={this.handleMenuClick}
           >
             {getUrlParam(URL_PARAMS.standalone)
@@ -237,14 +224,14 @@ export class HeaderActionsDropdown extends PureComponent {
         )}
         {editMode && (
           <Menu.Item
-            key={MENU_KEYS.EDIT_PROPERTIES}
+            key={MenuKeys.EditProperties}
             onClick={this.handleMenuClick}
           >
             {t('Edit properties')}
           </Menu.Item>
         )}
         {editMode && (
-          <Menu.Item key={MENU_KEYS.EDIT_CSS}>
+          <Menu.Item key={MenuKeys.EditCss}>
             <CssEditor
               triggerNode={<span>{t('Edit CSS')}</span>}
               initialCss={this.state.css}
@@ -255,7 +242,7 @@ export class HeaderActionsDropdown extends PureComponent {
         )}
         <Menu.Divider />
         {userCanSave && (
-          <Menu.Item key={MENU_KEYS.SAVE_MODAL}>
+          <Menu.Item key={MenuKeys.SaveModal}>
             <SaveModal
               addSuccessToast={this.props.addSuccessToast}
               addDangerToast={this.props.addDangerToast}
@@ -280,7 +267,7 @@ export class HeaderActionsDropdown extends PureComponent {
           </Menu.Item>
         )}
         <Menu.SubMenu
-          key={MENU_KEYS.DOWNLOAD_DASHBOARD}
+          key={MenuKeys.Download}
           disabled={isLoading}
           title={t('Download')}
           logEvent={this.props.logEvent}
@@ -289,12 +276,12 @@ export class HeaderActionsDropdown extends PureComponent {
             pdfMenuItemTitle={t('Export to PDF')}
             imageMenuItemTitle={t('Download as Image')}
             dashboardTitle={dashboardTitle}
-            addDangerToast={addDangerToast}
+            dashboardId={dashboardId}
           />
         </Menu.SubMenu>
         {userCanShare && (
           <Menu.SubMenu
-            key={MENU_KEYS.SHARE_DASHBOARD}
+            key={MenuKeys.Share}
             data-test="share-dashboard-menu-item"
             disabled={isLoading}
             title={t('Share')}
@@ -314,7 +301,7 @@ export class HeaderActionsDropdown extends PureComponent {
         )}
         {!editMode && userCanCurate && (
           <Menu.Item
-            key={MENU_KEYS.MANAGE_EMBEDDED}
+            key={MenuKeys.ManageEmbedded}
             onClick={this.handleMenuClick}
           >
             {t('Embed dashboard')}
@@ -349,7 +336,7 @@ export class HeaderActionsDropdown extends PureComponent {
           )
         ) : null}
         {editMode && !isEmpty(dashboardInfo?.metadata?.filter_scopes) && (
-          <Menu.Item key={MENU_KEYS.SET_FILTER_MAPPING}>
+          <Menu.Item key={MenuKeys.SetFilterMapping}>
             <FilterScopeModal
               className="m-r-5"
               triggerNode={t('Set filter mapping')}
@@ -357,7 +344,7 @@ export class HeaderActionsDropdown extends PureComponent {
           </Menu.Item>
         )}
 
-        <Menu.Item key={MENU_KEYS.AUTOREFRESH_MODAL}>
+        <Menu.Item key={MenuKeys.AutorefreshModal}>
           <RefreshIntervalModal
             addSuccessToast={this.props.addSuccessToast}
             refreshFrequency={refreshFrequency}

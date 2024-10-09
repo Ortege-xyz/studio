@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React from 'react';
+import { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { bindActionCreators } from 'redux';
@@ -47,6 +47,8 @@ const propTypes = {
   depth: PropTypes.number.isRequired,
   renderType: PropTypes.oneOf([RENDER_TAB, RENDER_TAB_CONTENT]).isRequired,
   onDropOnTab: PropTypes.func,
+  onDropPositionChange: PropTypes.func,
+  onDragTab: PropTypes.func,
   onHoverTab: PropTypes.func,
   editMode: PropTypes.bool.isRequired,
   canEdit: PropTypes.bool.isRequired,
@@ -69,6 +71,8 @@ const defaultProps = {
   availableColumnCount: 0,
   columnWidth: 0,
   onDropOnTab() {},
+  onDropPositionChange() {},
+  onDragTab() {},
   onHoverTab() {},
   onResizeStart() {},
   onResize() {},
@@ -86,10 +90,18 @@ const TabTitleContainer = styled.div`
   `}
 `;
 
+const TitleDropIndicator = styled.div`
+  &.drop-indicator {
+    position: absolute;
+    top: 0;
+    border-radius: 4px;
+  }
+`;
+
 const renderDraggableContent = dropProps =>
   dropProps.dropIndicatorProps && <div {...dropProps.dropIndicatorProps} />;
 
-class Tab extends React.PureComponent {
+class Tab extends PureComponent {
   constructor(props) {
     super(props);
     this.handleChangeText = this.handleChangeText.bind(this);
@@ -223,7 +235,7 @@ class Tab extends React.PureComponent {
           />
         )}
         {tabComponent.children.map((componentId, componentIndex) => (
-          <React.Fragment key={componentId}>
+          <Fragment key={componentId}>
             <DashboardComponent
               id={componentId}
               parentId={tabComponent.id}
@@ -253,7 +265,7 @@ class Tab extends React.PureComponent {
                 {renderDraggableContent}
               </Droppable>
             )}
-          </React.Fragment>
+          </Fragment>
         ))}
       </div>
     );
@@ -268,6 +280,8 @@ class Tab extends React.PureComponent {
       editMode,
       isFocused,
       isHighlighted,
+      onDropPositionChange,
+      onDragTab,
     } = this.props;
 
     return (
@@ -279,10 +293,12 @@ class Tab extends React.PureComponent {
         depth={depth}
         onDrop={this.handleDrop}
         onHover={this.handleOnHover}
+        onDropIndicatorChange={onDropPositionChange}
+        onDragTab={onDragTab}
         editMode={editMode}
         dropToChild={this.shouldDropToChild}
       >
-        {({ dropIndicatorProps, dragSourceRef }) => (
+        {({ dropIndicatorProps, dragSourceRef, draggingTabOnTab }) => (
           <TabTitleContainer
             isHighlighted={isHighlighted}
             className="dragdroppable-tab"
@@ -304,8 +320,12 @@ class Tab extends React.PureComponent {
                 placement={index >= 5 ? 'left' : 'right'}
               />
             )}
-
-            {dropIndicatorProps && <div {...dropIndicatorProps} />}
+            {dropIndicatorProps && !draggingTabOnTab && (
+              <TitleDropIndicator
+                className={dropIndicatorProps.className}
+                data-test="title-drop-indicator"
+              />
+            )}
           </TabTitleContainer>
         )}
       </DragDroppable>

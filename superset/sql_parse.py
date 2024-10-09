@@ -16,23 +16,19 @@
 # under the License.
 
 # pylint: disable=too-many-lines
+
 from __future__ import annotations
 
 import logging
 import re
-import urllib.parse
-from collections.abc import Iterable, Iterator
-from dataclasses import dataclass
+from collections.abc import Iterator
 from typing import Any, cast, TYPE_CHECKING
 
 import sqlparse
 from flask_babel import gettext as __
 from jinja2 import nodes
 from sqlalchemy import and_
-from sqlglot import exp, parse, parse_one
-from sqlglot.dialects import Dialects
-from sqlglot.errors import ParseError, SqlglotError
-from sqlglot.optimizer.scope import Scope, ScopeType, traverse_scope
+from sqlglot.dialects.dialect import Dialects
 from sqlparse import keywords
 from sqlparse.lexer import Lexer
 from sqlparse.sql import (
@@ -62,8 +58,10 @@ from sqlparse.utils import imt
 from superset.errors import ErrorLevel, SupersetError, SupersetErrorType
 from superset.exceptions import (
     QueryClauseValidationException,
+    SupersetParseError,
     SupersetSecurityException,
 )
+from superset.sql.parse import extract_tables_from_statement, SQLScript, Table
 from superset.utils.backports import StrEnum
 
 try:
@@ -98,6 +96,7 @@ SQLGLOT_DIALECTS = {
     "clickhouse": Dialects.CLICKHOUSE,
     "clickhousedb": Dialects.CLICKHOUSE,
     "cockroachdb": Dialects.POSTGRES,
+    "couchbase": Dialects.MYSQL,
     # "crate": ???
     # "databend": ???
     "databricks": Dialects.DATABRICKS,
@@ -221,7 +220,9 @@ def get_cte_remainder_query(sql: str) -> tuple[str | None, str]:
 
 
 def check_sql_functions_exist(
-    sql: str, function_list: set[str], engine: str | None = None
+    sql: str,
+    function_list: set[str],
+    engine: str = "base",
 ) -> bool:
     """
     Check if the SQL statement contains any of the specified functions.
@@ -233,7 +234,7 @@ def check_sql_functions_exist(
     return ParsedQuery(sql, engine=engine).check_functions_exist(function_list)
 
 
-def strip_comments_from_sql(statement: str, engine: str | None = None) -> str:
+def strip_comments_from_sql(statement: str, engine: str = "base") -> str:
     """
     Strips comments from a SQL statement, does a simple test first
     to avoid always instantiating the expensive ParsedQuery constructor
@@ -250,42 +251,18 @@ def strip_comments_from_sql(statement: str, engine: str | None = None) -> str:
     )
 
 
-@dataclass(eq=True, frozen=True)
-class Table:
-    """
-    A fully qualified SQL table conforming to [[catalog.]schema.]table.
-    """
-
-    table: str
-    schema: str | None = None
-    catalog: str | None = None
-
-    def __str__(self) -> str:
-        """
-        Return the fully qualified SQL table name.
-        """
-
-        return ".".join(
-            urllib.parse.quote(part, safe="").replace(".", "%2E")
-            for part in [self.catalog, self.schema, self.table]
-            if part
-        )
-
-    def __eq__(self, __o: object) -> bool:
-        return str(self) == str(__o)
-
-
 class ParsedQuery:
     def __init__(
         self,
         sql_statement: str,
         strip_comments: bool = False,
-        engine: str | None = None,
+        engine: str = "base",
     ):
         if strip_comments:
             sql_statement = sqlparse.format(sql_statement, strip_comments=True)
 
         self.sql: str = sql_statement
+        self._engine = engine
         self._dialect = SQLGLOT_DIALECTS.get(engine) if engine else None
         self._tables: set[Table] = set()
         self._alias_names: set[str] = set()
@@ -337,24 +314,18 @@ class ParsedQuery:
         Note: this uses sqlglot, since it's better at catching more edge cases.
         """
         try:
-            statements = parse(self.stripped(), dialect=self._dialect)
-        except SqlglotError as ex:
+            statements = [
+                statement._parsed  # pylint: disable=protected-access
+                for statement in SQLScript(self.stripped(), self._engine).statements
+            ]
+        except SupersetParseError as ex:
             logger.warning("Unable to parse SQL (%s): %s", self._dialect, self.sql)
-
-            message = (
-                "Error parsing near '{highlight}' at line {line}:{col}".format(  # pylint: disable=consider-using-f-string
-                    **ex.errors[0]
-                )
-                if isinstance(ex, ParseError)
-                else str(ex)
-            )
-
             raise SupersetSecurityException(
                 SupersetError(
                     error_type=SupersetErrorType.QUERY_SECURITY_ACCESS_ERROR,
                     message=__(
-                        f"You may have an error in your SQL statement. {message}"
-                    ),
+                        "You may have an error in your SQL statement. {message}"
+                    ).format(message=ex.error.message),
                     level=ErrorLevel.ERROR,
                 )
             ) from ex
@@ -362,80 +333,9 @@ class ParsedQuery:
         return {
             table
             for statement in statements
-            for table in self._extract_tables_from_statement(statement)
+            for table in extract_tables_from_statement(statement, self._dialect)
             if statement
         }
-
-    def _extract_tables_from_statement(self, statement: exp.Expression) -> set[Table]:
-        """
-        Extract all table references in a single statement.
-
-        Please not that this is not trivial; consider the following queries:
-
-            DESCRIBE some_table;
-            SHOW PARTITIONS FROM some_table;
-            WITH masked_name AS (SELECT * FROM some_table) SELECT * FROM masked_name;
-
-        See the unit tests for other tricky cases.
-        """
-        sources: Iterable[exp.Table]
-
-        if isinstance(statement, exp.Describe):
-            # A `DESCRIBE` query has no sources in sqlglot, so we need to explicitly
-            # query for all tables.
-            sources = statement.find_all(exp.Table)
-        elif isinstance(statement, exp.Command):
-            # Commands, like `SHOW COLUMNS FROM foo`, have to be converted into a
-            # `SELECT` statetement in order to extract tables.
-            if not (literal := statement.find(exp.Literal)):
-                return set()
-
-            try:
-                pseudo_query = parse_one(
-                    f"SELECT {literal.this}",
-                    dialect=self._dialect,
-                )
-                sources = pseudo_query.find_all(exp.Table)
-            except SqlglotError:
-                return set()
-        else:
-            sources = [
-                source
-                for scope in traverse_scope(statement)
-                for source in scope.sources.values()
-                if isinstance(source, exp.Table) and not self._is_cte(source, scope)
-            ]
-
-        return {
-            Table(
-                source.name,
-                source.db if source.db != "" else None,
-                source.catalog if source.catalog != "" else None,
-            )
-            for source in sources
-        }
-
-    def _is_cte(self, source: exp.Table, scope: Scope) -> bool:
-        """
-        Is the source a CTE?
-
-        CTEs in the parent scope look like tables (and are represented by
-        exp.Table objects), but should not be considered as such;
-        otherwise a user with access to table `foo` could access any table
-        with a query like this:
-
-            WITH foo AS (SELECT * FROM target_table) SELECT * FROM foo
-
-        """
-        parent_sources = scope.parent.sources if scope.parent else {}
-        ctes_in_scope = {
-            name
-            for name, parent_scope in parent_sources.items()
-            if isinstance(parent_scope, Scope)
-            and parent_scope.scope_type == ScopeType.CTE
-        }
-
-        return source.name in ctes_in_scope
 
     @property
     def limit(self) -> int | None:
@@ -814,10 +714,8 @@ def get_rls_for_table(
     if not dataset:
         return None
 
-    template_processor = dataset.get_template_processor()
     predicate = " AND ".join(
-        str(filter_)
-        for filter_ in dataset.get_sqla_row_level_filters(template_processor)
+        str(filter_) for filter_ in dataset.get_sqla_row_level_filters()
     )
     if not predicate:
         return None

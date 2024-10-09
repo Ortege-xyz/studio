@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React from 'react';
+import { PureComponent } from 'react';
 import { pick } from 'lodash';
 import { EditableTabs } from 'src/components/Tabs';
 import { connect } from 'react-redux';
@@ -62,7 +62,7 @@ type TabbedSqlEditorsProps = ReturnType<typeof mergeProps>;
 
 const SQL_LAB_URL = '/sqllab';
 
-class TabbedSqlEditors extends React.PureComponent<TabbedSqlEditorsProps> {
+class TabbedSqlEditors extends PureComponent<TabbedSqlEditorsProps> {
   constructor(props: TabbedSqlEditorsProps) {
     super(props);
     this.removeQueryEditor = this.removeQueryEditor.bind(this);
@@ -71,32 +71,6 @@ class TabbedSqlEditors extends React.PureComponent<TabbedSqlEditorsProps> {
   }
 
   componentDidMount() {
-    // migrate query editor and associated tables state to server
-    if (isFeatureEnabled(FeatureFlag.SqllabBackendPersistence)) {
-      const localStorageTables = this.props.tables.filter(
-        table => table.inLocalStorage,
-      );
-      const localStorageQueries = Object.values(this.props.queries).filter(
-        query => query.inLocalStorage,
-      );
-      this.props.queryEditors
-        .filter(qe => qe.inLocalStorage)
-        .forEach(qe => {
-          // get all queries associated with the query editor
-          const queries = localStorageQueries.filter(
-            query => query.sqlEditorId === qe.id,
-          );
-          const tables = localStorageTables.filter(
-            table => table.queryEditorId === qe.id,
-          );
-          this.props.actions.migrateQueryEditorFromLocalStorage(
-            qe,
-            tables,
-            queries,
-          );
-        });
-    }
-
     // merge post form data with GET search params
     // Hack: this data should be coming from getInitialState
     // but for some reason this data isn't being passed properly through
@@ -112,6 +86,7 @@ class TabbedSqlEditors extends React.PureComponent<TabbedSqlEditorsProps> {
       queryId,
       dbid,
       dbname,
+      catalog,
       schema,
       autorun,
       new: isNewQuery,
@@ -150,6 +125,7 @@ class TabbedSqlEditors extends React.PureComponent<TabbedSqlEditorsProps> {
         const newQueryEditor = {
           name,
           dbId: databaseId,
+          catalog,
           schema,
           autorun,
           sql,
@@ -206,10 +182,7 @@ class TabbedSqlEditors extends React.PureComponent<TabbedSqlEditorsProps> {
       if (!queryEditor) {
         return;
       }
-      this.props.actions.switchQueryEditor(
-        queryEditor,
-        this.props.displayLimit,
-      );
+      this.props.actions.setActiveQueryEditor(queryEditor);
     }
   }
 
@@ -330,7 +303,6 @@ export function mapStateToProps({ sqlLab, common }: SqlLabRootState) {
     queryEditors: sqlLab.queryEditors ?? DEFAULT_PROPS.queryEditors,
     queries: sqlLab.queries,
     tabHistory: sqlLab.tabHistory,
-    tables: sqlLab.tables,
     defaultDbId: common.conf.SQLLAB_DEFAULT_DBID,
     displayLimit: common.conf.DISPLAY_MAX_ROW,
     offline: sqlLab.offline ?? DEFAULT_PROPS.offline,
