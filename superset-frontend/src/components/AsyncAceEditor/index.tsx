@@ -31,8 +31,16 @@ import AsyncEsmComponent, {
   PlaceholderProps,
 } from 'src/components/AsyncEsmComponent';
 import useEffectEvent from 'src/hooks/useEffectEvent';
+<<<<<<< HEAD
 import { useTheme, css } from '@superset-ui/core';
 import { Global } from '@emotion/react';
+=======
+import cssWorkerUrl from 'ace-builds/src-noconflict/worker-css';
+import { useTheme, css } from '@superset-ui/core';
+import { Global } from '@emotion/react';
+
+export { getTooltipHTML } from './Tooltip';
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
 export { getTooltipHTML } from './Tooltip';
 

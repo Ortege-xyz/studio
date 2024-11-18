@@ -43,7 +43,11 @@ from superset.commands.database.test_connection import TestConnectionDatabaseCom
 from superset.daos.database import DatabaseDAO
 from superset.databases.ssh_tunnel.models import SSHTunnel
 from superset.db_engine_specs.base import GenericDBException
+<<<<<<< HEAD
 from superset.exceptions import OAuth2RedirectError, SupersetErrorsException
+=======
+from superset.exceptions import SupersetErrorsException
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 from superset.extensions import event_logger, security_manager
 from superset.models.core import Database
 from superset.utils.decorators import on_error, transaction

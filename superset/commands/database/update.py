@@ -42,7 +42,10 @@ from superset.daos.database import DatabaseDAO
 from superset.daos.dataset import DatasetDAO
 from superset.databases.ssh_tunnel.models import SSHTunnel
 from superset.db_engine_specs.base import GenericDBException
+<<<<<<< HEAD
 from superset.exceptions import OAuth2RedirectError
+=======
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 from superset.models.core import Database
 from superset.utils.decorators import on_error, transaction
 
@@ -81,10 +84,14 @@ class UpdateDatabaseCommand(BaseCommand):
         database = DatabaseDAO.update(self._model, self._properties)
         database.set_sqlalchemy_uri(database.sqlalchemy_uri)
         ssh_tunnel = self._handle_ssh_tunnel(database)
+<<<<<<< HEAD
         try:
             self._refresh_catalogs(database, original_database_name, ssh_tunnel)
         except OAuth2RedirectError:
             pass
+=======
+        self._refresh_catalogs(database, original_database_name, ssh_tunnel)
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
         return database
 
@@ -127,9 +134,12 @@ class UpdateDatabaseCommand(BaseCommand):
                 force=True,
                 ssh_tunnel=ssh_tunnel,
             )
+<<<<<<< HEAD
         except OAuth2RedirectError:
             # raise OAuth2 exceptions as-is
             raise
+=======
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
         except GenericDBException as ex:
             raise DatabaseConnectionFailedError() from ex
 
@@ -148,9 +158,12 @@ class UpdateDatabaseCommand(BaseCommand):
                 catalog=catalog,
                 ssh_tunnel=ssh_tunnel,
             )
+<<<<<<< HEAD
         except OAuth2RedirectError:
             # raise OAuth2 exceptions as-is
             raise
+=======
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
         except GenericDBException as ex:
             raise DatabaseConnectionFailedError() from ex
 

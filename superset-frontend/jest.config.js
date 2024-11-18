@@ -56,7 +56,11 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   snapshotSerializers: ['@emotion/jest/enzyme-serializer'],
   transformIgnorePatterns: [
+<<<<<<< HEAD
     'node_modules/(?!d3-(interpolate|color|time)|remark-gfm|markdown-table|micromark-*.|decode-named-character-reference|character-entities|mdast-util-*.|unist-util-*.|ccount|escape-string-regexp|nanoid|@rjsf/*.|sinon|echarts|zrender)',
+=======
+    'node_modules/(?!d3-(interpolate|color)|remark-gfm|markdown-table|micromark-*.|decode-named-character-reference|character-entities|mdast-util-*.|unist-util-*.|ccount|escape-string-regexp|nanoid|echarts|zrender)',
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
   ],
   globals: {
     __DEV__: true,

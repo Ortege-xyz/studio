@@ -42,7 +42,10 @@ import {
   css,
   getNumberFormatter,
   getExtensionsRegistry,
+<<<<<<< HEAD
   ErrorLevel,
+=======
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
   ErrorTypeEnum,
 } from '@superset-ui/core';
 import ErrorMessageWithStackTrace from 'src/components/ErrorMessage/ErrorMessageWithStackTrace';
@@ -554,6 +557,7 @@ const ResultSet = ({
 
     return (
       <ResultlessStyles>
+<<<<<<< HEAD
         {errors.map((error, index) => (
           <ErrorMessageWithStackTrace
             key={index}
@@ -568,6 +572,18 @@ const ResultSet = ({
         {errors.some(
           error => error?.error_type === ErrorTypeEnum.FRONTEND_TIMEOUT_ERROR,
         ) ? (
+=======
+        <ErrorMessageWithStackTrace
+          title={t('Database error')}
+          error={query?.extra?.errors?.[0] || query?.errors?.[0]}
+          subtitle={<MonospaceDiv>{query.errorMessage}</MonospaceDiv>}
+          copyText={query.errorMessage || undefined}
+          link={query.link}
+          source="sqllab"
+        />
+        {(query?.extra?.errors?.[0] || query?.errors?.[0])?.error_type ===
+        ErrorTypeEnum.FRONTEND_TIMEOUT_ERROR ? (
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
           <Button
             className="sql-result-track-job"
             buttonSize="small"
@@ -646,7 +662,7 @@ const ResultSet = ({
         : [];
       const allowHTML = getItem(
         LocalStorageKeys.SqllabIsRenderHtmlEnabled,
-        false,
+        true,
       );
       return (
         <ResultContainer>

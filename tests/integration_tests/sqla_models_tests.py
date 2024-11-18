@@ -15,11 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 # isort:skip_file
+from __future__ import annotations
+
 import re
 from datetime import datetime
-from typing import Any, NamedTuple, Optional, Union
+from typing import Any, Literal, NamedTuple, Optional, Union
 from re import Pattern
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import pytest
 
 import numpy as np
@@ -133,6 +135,7 @@ class TestDatabaseModel(SupersetTestCase):
             col = TableColumn(column_name="foo", type=str_type, table=tbl, is_dttm=True)
             assert col.is_temporal
 
+<<<<<<< HEAD
     @patch("superset.jinja_context.get_user_id", return_value=1)
     @patch("superset.jinja_context.get_username", return_value="abc")
     @patch("superset.jinja_context.get_user_email", return_value="abc@test.com")
@@ -201,6 +204,8 @@ class TestDatabaseModel(SupersetTestCase):
         assert table3.has_extra_cache_key_calls(query_obj)
         assert extra_cache_keys == ["abc"]
 
+=======
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
     @patch("superset.jinja_context.get_username", return_value="abc")
     def test_jinja_metrics_and_calc_columns(self, mock_username):
         base_query_obj = {
@@ -857,6 +862,227 @@ def test_none_operand_in_filter(login_as_admin, physical_dataset):
                     "is_timeseries": False,
                 }
             )
+
+
+@pytest.mark.usefixtures("app_context")
+@pytest.mark.parametrize(
+    "table_name,sql,expected_cache_keys,has_extra_cache_keys",
+    [
+        (
+            "test_has_extra_cache_keys_table",
+            """
+            SELECT
+            '{{ current_user_id() }}' as id,
+            '{{ current_username() }}' as username,
+            '{{ current_user_email() }}' as email
+            """,
+            {1, "abc", "abc@test.com"},
+            True,
+        ),
+        (
+            "test_has_extra_cache_keys_table_with_set",
+            """
+            {% set user_email = current_user_email() %}
+            SELECT
+            '{{ current_user_id() }}' as id,
+            '{{ current_username() }}' as username,
+            '{{ user_email }}' as email
+            """,
+            {1, "abc", "abc@test.com"},
+            True,
+        ),
+        (
+            "test_has_extra_cache_keys_table_with_se_multiple",
+            """
+            {% set user_conditional_id = current_user_email() and current_user_id() %}
+            SELECT
+            '{{ user_conditional_id }}' as conditional
+            """,
+            {1, "abc@test.com"},
+            True,
+        ),
+        (
+            "test_has_extra_cache_keys_disabled_table",
+            """
+            SELECT
+            '{{ current_user_id(False) }}' as id,
+            '{{ current_username(False) }}' as username,
+            '{{ current_user_email(False) }}' as email
+            """,
+            [],
+            True,
+        ),
+        ("test_has_no_extra_cache_keys_table", "SELECT 'abc' as user", [], False),
+    ],
+)
+@patch("superset.jinja_context.get_user_id", return_value=1)
+@patch("superset.jinja_context.get_username", return_value="abc")
+@patch("superset.jinja_context.get_user_email", return_value="abc@test.com")
+def test_extra_cache_keys(
+    mock_user_email,
+    mock_username,
+    mock_user_id,
+    table_name,
+    sql,
+    expected_cache_keys,
+    has_extra_cache_keys,
+):
+    table = SqlaTable(
+        table_name=table_name,
+        sql=sql,
+        database=get_example_database(),
+    )
+    base_query_obj = {
+        "granularity": None,
+        "from_dttm": None,
+        "to_dttm": None,
+        "groupby": ["id", "username", "email"],
+        "metrics": [],
+        "is_timeseries": False,
+        "filter": [],
+    }
+
+    query_obj = dict(**base_query_obj, extras={})
+
+    extra_cache_keys = table.get_extra_cache_keys(query_obj)
+    assert table.has_extra_cache_key_calls(query_obj) == has_extra_cache_keys
+    assert set(extra_cache_keys) == set(expected_cache_keys)
+
+
+@pytest.mark.usefixtures("app_context")
+@pytest.mark.parametrize(
+    "sql_expression,expected_cache_keys,has_extra_cache_keys",
+    [
+        ("(user != '{{ current_username() }}')", ["abc"], True),
+        ("(user != 'abc')", [], False),
+    ],
+)
+@patch("superset.jinja_context.get_user_id", return_value=1)
+@patch("superset.jinja_context.get_username", return_value="abc")
+@patch("superset.jinja_context.get_user_email", return_value="abc@test.com")
+def test_extra_cache_keys_in_sql_expression(
+    mock_user_email,
+    mock_username,
+    mock_user_id,
+    sql_expression,
+    expected_cache_keys,
+    has_extra_cache_keys,
+):
+    table = SqlaTable(
+        table_name="test_has_no_extra_cache_keys_table",
+        sql="SELECT 'abc' as user",
+        database=get_example_database(),
+    )
+    base_query_obj = {
+        "granularity": None,
+        "from_dttm": None,
+        "to_dttm": None,
+        "groupby": ["id", "username", "email"],
+        "metrics": [],
+        "is_timeseries": False,
+        "filter": [],
+    }
+
+    query_obj = dict(**base_query_obj, extras={"where": sql_expression})
+
+    extra_cache_keys = table.get_extra_cache_keys(query_obj)
+    assert table.has_extra_cache_key_calls(query_obj) == has_extra_cache_keys
+    assert extra_cache_keys == expected_cache_keys
+
+
+@pytest.mark.usefixtures("app_context")
+@pytest.mark.parametrize(
+    "sql_expression,expected_cache_keys,has_extra_cache_keys,item_type",
+    [
+        ("'{{ current_username() }}'", ["abc"], True, "columns"),
+        ("(user != 'abc')", [], False, "columns"),
+        ("{{ current_user_id() }}", [1], True, "metrics"),
+        ("COUNT(*)", [], False, "metrics"),
+    ],
+)
+@patch("superset.jinja_context.get_user_id", return_value=1)
+@patch("superset.jinja_context.get_username", return_value="abc")
+def test_extra_cache_keys_in_adhoc_metrics_and_columns(
+    mock_username: Mock,
+    mock_user_id: Mock,
+    sql_expression: str,
+    expected_cache_keys: list[str | None],
+    has_extra_cache_keys: bool,
+    item_type: Literal["columns", "metrics"],
+):
+    table = SqlaTable(
+        table_name="test_has_no_extra_cache_keys_table",
+        sql="SELECT 'abc' as user",
+        database=get_example_database(),
+    )
+    base_query_obj: dict[str, Any] = {
+        "granularity": None,
+        "from_dttm": None,
+        "to_dttm": None,
+        "groupby": [],
+        "metrics": [],
+        "columns": [],
+        "is_timeseries": False,
+        "filter": [],
+    }
+
+    items: dict[str, Any] = {
+        item_type: [
+            {
+                "label": None,
+                "expressionType": "SQL",
+                "sqlExpression": sql_expression,
+            }
+        ],
+    }
+
+    query_obj = {**base_query_obj, **items}
+
+    extra_cache_keys = table.get_extra_cache_keys(query_obj)
+    assert table.has_extra_cache_key_calls(query_obj) == has_extra_cache_keys
+    assert extra_cache_keys == expected_cache_keys
+
+
+@pytest.mark.usefixtures("app_context")
+@patch("superset.jinja_context.get_user_id", return_value=1)
+@patch("superset.jinja_context.get_username", return_value="abc")
+def test_extra_cache_keys_in_dataset_metrics_and_columns(
+    mock_username: Mock,
+    mock_user_id: Mock,
+):
+    table = SqlaTable(
+        table_name="test_has_no_extra_cache_keys_table",
+        sql="SELECT 'abc' as user",
+        database=get_example_database(),
+        columns=[
+            TableColumn(column_name="user", type="VARCHAR(255)"),
+            TableColumn(
+                column_name="username",
+                type="VARCHAR(255)",
+                expression="{{ current_username() }}",
+            ),
+        ],
+        metrics=[
+            SqlMetric(
+                metric_name="variable_profit",
+                expression="SUM(price) * {{ url_param('multiplier') }}",
+            ),
+        ],
+    )
+    query_obj: dict[str, Any] = {
+        "granularity": None,
+        "from_dttm": None,
+        "to_dttm": None,
+        "groupby": [],
+        "columns": ["username"],
+        "metrics": ["variable_profit"],
+        "is_timeseries": False,
+        "filter": [],
+    }
+
+    extra_cache_keys = table.get_extra_cache_keys(query_obj)
+    assert table.has_extra_cache_key_calls(query_obj) is True
+    assert set(extra_cache_keys) == {"abc", None}
 
 
 @pytest.mark.usefixtures("app_context")

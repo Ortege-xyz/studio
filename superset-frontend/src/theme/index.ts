@@ -69,12 +69,15 @@ const baseConfig: ThemeConfig = {
       colorText: supersetTheme.colors.text.label,
       remainingColor: supersetTheme.colors.grayscale.light4,
     },
+<<<<<<< HEAD
     Slider: {
       trackBgDisabled: supersetTheme.colors.grayscale.light1,
       colorBgElevated: supersetTheme.colors.grayscale.light5,
       handleSizeHover: 10,
       handleLineWidthHover: 2,
     },
+=======
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
   },
 };
 

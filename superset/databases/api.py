@@ -130,7 +130,11 @@ from superset.views.base_api import (
     requires_json,
     statsd_metrics,
 )
+<<<<<<< HEAD
 from superset.views.error_handling import handle_api_exception, json_error_response
+=======
+from superset.views.error_handling import json_error_response
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 from superset.views.filters import BaseFilterRelatedUsers, FilterRelatedOwners
 
 logger = logging.getLogger(__name__)

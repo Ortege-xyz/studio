@@ -17,7 +17,12 @@
  * under the License.
  */
 import { Provider } from 'react-redux';
+<<<<<<< HEAD
 import { act, fireEvent, render, screen } from 'spec/helpers/testing-library';
+=======
+import { styledMount as mount } from 'spec/helpers/theming';
+import { Avatar } from 'src/components';
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 import { store } from 'src/views/store';
 import FacePile from '.';
 import { getRandomColor } from './utils';
@@ -37,6 +42,7 @@ afterEach(() => {
 });
 
 describe('FacePile', () => {
+<<<<<<< HEAD
   let container: HTMLElement;
 
   beforeEach(() => {
@@ -46,6 +52,13 @@ describe('FacePile', () => {
       </Provider>,
     ));
   });
+=======
+  const wrapper = mount(
+    <Provider store={store}>
+      <FacePile users={users} />
+    </Provider>,
+  );
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
   it('is a valid element', () => {
     const exposedFaces = screen.getAllByText(/U/);

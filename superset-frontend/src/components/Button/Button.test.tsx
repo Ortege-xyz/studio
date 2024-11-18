@@ -30,6 +30,7 @@ test('works with an onClick handler', () => {
   fireEvent.click(getByRole('button'));
   expect(mockAction).toHaveBeenCalled();
 });
+<<<<<<< HEAD
 
 test('does not handle onClicks when disabled', () => {
   const mockAction = jest.fn();
@@ -41,6 +42,20 @@ test('does not handle onClicks when disabled', () => {
 // test stories from the storybook!
 test('All the sorybook gallery variants mount', () => {
   const { getAllByRole } = render(<ButtonGallery />);
+=======
+
+test('does not handle onClicks when disabled', () => {
+  const mockAction = jest.fn();
+  const { getByRole } = render(<Button onClick={mockAction} disabled />);
+  fireEvent.click(getByRole('button'));
+  expect(mockAction).toHaveBeenCalledTimes(0);
+});
+
+// test stories from the storybook!
+test('All the sorybook gallery variants mount', () => {
+  const { getAllByRole } = render(<ButtonGallery />);
+
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
   const permutationCount =
     Object.values(buttonStyles.options).filter(o => o).length *
     Object.values(buttonSizes.options).length;

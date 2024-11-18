@@ -83,7 +83,11 @@ function useSelectChartTabParents() {
     const chartLayoutItem = Object.values(dashboardLayout).find(
       layoutItem => layoutItem.meta?.chartId === chartId,
     );
+<<<<<<< HEAD
     return chartLayoutItem?.parents?.filter(
+=======
+    return chartLayoutItem?.parents.filter(
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
       (parent: string) => dashboardLayout[parent]?.type === TAB_TYPE,
     );
   };

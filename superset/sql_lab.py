@@ -238,6 +238,7 @@ def execute_sql_statement(  # pylint: disable=too-many-statements, too-many-loca
     increased_limit = None if query.limit is None else query.limit + 1
 
     if not database.allow_dml:
+<<<<<<< HEAD
         errors = []
         try:
             parsed_statement = SQLStatement(sql_statement, engine=db_engine_spec.engine)
@@ -249,6 +250,17 @@ def execute_sql_statement(  # pylint: disable=too-many-statements, too-many-loca
 
         if disallowed:
             errors.append(
+=======
+        try:
+            parsed_statement = SQLStatement(sql_statement, engine=db_engine_spec.engine)
+            disallowed = parsed_statement.is_mutating()
+        except SupersetParseError:
+            # if we fail to parse teh query, disallow by default
+            disallowed = True
+
+        if disallowed:
+            raise SupersetErrorException(
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
                 SupersetError(
                     message=__(
                         "This database does not allow for DDL/DML, and the query "
@@ -259,7 +271,10 @@ def execute_sql_statement(  # pylint: disable=too-many-statements, too-many-loca
                     level=ErrorLevel.ERROR,
                 )
             )
+<<<<<<< HEAD
             raise SupersetErrorsException(errors)
+=======
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
     if apply_ctas:
         if not query.tmp_table_name:

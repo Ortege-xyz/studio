@@ -26,6 +26,11 @@ from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
 import sqlglot
+<<<<<<< HEAD
+=======
+import sqlparse
+from deprecation import deprecated
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 from sqlglot import exp
 from sqlglot.dialects.dialect import Dialect, Dialects
 from sqlglot.errors import ParseError
@@ -138,9 +143,15 @@ class BaseSQLStatement(Generic[InternalRepresentation]):
     """
     Base class for SQL statements.
 
+<<<<<<< HEAD
     The class can be instantiated with a string representation of the script or, for
     efficiency reasons, with a pre-parsed AST. This is useful with `sqlglot.parse`,
     which will split a script in multiple already parsed statements.
+=======
+    The class should be instantiated with a string representation of the script and, for
+    efficiency reasons, optionally with a pre-parsed AST. This is useful with
+    `sqlglot.parse`, which will split a script in multiple already parsed statements.
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
     The `engine` parameters comes from the `engine` attribute in a Superset DB engine
     spec.
@@ -148,6 +159,7 @@ class BaseSQLStatement(Generic[InternalRepresentation]):
 
     def __init__(
         self,
+<<<<<<< HEAD
         statement: str | InternalRepresentation,
         engine: str,
     ):
@@ -156,6 +168,14 @@ class BaseSQLStatement(Generic[InternalRepresentation]):
             if isinstance(statement, str)
             else statement
         )
+=======
+        statement: str,
+        engine: str,
+        ast: InternalRepresentation | None = None,
+    ):
+        self._sql = statement
+        self._parsed = ast or self._parse_statement(statement, engine)
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
         self.engine = engine
         self.tables = self._extract_tables_from_statement(self._parsed, self.engine)
 
@@ -239,11 +259,20 @@ class SQLStatement(BaseSQLStatement[exp.Expression]):
 
     def __init__(
         self,
+<<<<<<< HEAD
         statement: str | exp.Expression,
         engine: str,
     ):
         self._dialect = SQLGLOT_DIALECTS.get(engine)
         super().__init__(statement, engine)
+=======
+        statement: str,
+        engine: str,
+        ast: exp.Expression | None = None,
+    ):
+        self._dialect = SQLGLOT_DIALECTS.get(engine)
+        super().__init__(statement, engine, ast)
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
     @classmethod
     def _parse(cls, script: str, engine: str) -> list[exp.Expression]:
@@ -275,11 +304,55 @@ class SQLStatement(BaseSQLStatement[exp.Expression]):
         script: str,
         engine: str,
     ) -> list[SQLStatement]:
+<<<<<<< HEAD
         return [
             cls(statement, engine)
             for statement in cls._parse(script, engine)
             if statement
         ]
+=======
+        if dialect := SQLGLOT_DIALECTS.get(engine):
+            try:
+                return [
+                    cls(ast.sql(), engine, ast)
+                    for ast in cls._parse(script, engine)
+                    if ast
+                ]
+            except ValueError:
+                # `ast.sql()` might raise an error on some cases (eg, `SHOW TABLES
+                # FROM`). In this case, we rely on the tokenizer to generate the
+                # statements.
+                pass
+
+        # When we don't have a sqlglot dialect we can't rely on `ast.sql()` to correctly
+        # generate the SQL of each statement, so we tokenize the script and split it
+        # based on the location of semi-colons.
+        statements = []
+        start = 0
+        remainder = script
+
+        try:
+            tokens = sqlglot.tokenize(script, dialect)
+        except sqlglot.errors.TokenError as ex:
+            raise SupersetParseError(
+                script,
+                engine,
+                message="Unable to tokenize script",
+            ) from ex
+
+        for token in tokens:
+            if token.token_type == sqlglot.TokenType.SEMICOLON:
+                statement, start = script[start : token.start], token.end + 1
+                ast = cls._parse(statement, engine)[0]
+                statements.append(cls(statement.strip(), engine, ast))
+                remainder = script[start:]
+
+        if remainder.strip():
+            ast = cls._parse(remainder, engine)[0]
+            statements.append(cls(remainder.strip(), engine, ast))
+
+        return statements
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
     @classmethod
     def _parse_statement(
@@ -349,8 +422,39 @@ class SQLStatement(BaseSQLStatement[exp.Expression]):
         """
         Pretty-format the SQL statement.
         """
+<<<<<<< HEAD
         write = Dialect.get_or_raise(self._dialect)
         return write.generate(self._parsed, copy=False, comments=comments, pretty=True)
+=======
+        if self._dialect:
+            try:
+                write = Dialect.get_or_raise(self._dialect)
+                return write.generate(
+                    self._parsed,
+                    copy=False,
+                    comments=comments,
+                    pretty=True,
+                )
+            except ValueError:
+                pass
+
+        return self._fallback_formatting()
+
+    @deprecated(deprecated_in="4.0", removed_in="5.0")
+    def _fallback_formatting(self) -> str:
+        """
+        Format SQL without a specific dialect.
+
+        Reformatting SQL using the generic sqlglot dialect is known to break queries.
+        For example, it will change `foo NOT IN (1, 2)` to `NOT foo IN (1,2)`, which
+        breaks the query for Firebolt. To avoid this, we use sqlparse for formatting
+        when the dialect is not known.
+
+        In 5.0 we should remove `sqlparse`, and the method should return the query
+        unmodified.
+        """
+        return sqlparse.format(self._sql, reindent=True, keyword_case="upper")
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
     def get_settings(self) -> dict[str, str | bool]:
         """
@@ -456,7 +560,13 @@ class KustoKQLStatement(BaseSQLStatement[str]):
         https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/scalar-data-types/string
         for more information.
         """
+<<<<<<< HEAD
         return [cls(statement, engine) for statement in split_kql(script)]
+=======
+        return [
+            cls(statement, engine, statement.strip()) for statement in split_kql(script)
+        ]
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
     @classmethod
     def _parse_statement(
@@ -498,7 +608,11 @@ class KustoKQLStatement(BaseSQLStatement[str]):
         """
         Pretty-format the SQL statement.
         """
+<<<<<<< HEAD
         return self._parsed
+=======
+        return self._sql.strip()
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
     def get_settings(self) -> dict[str, str | bool]:
         """
@@ -548,6 +662,12 @@ class SQLScript:
     def format(self, comments: bool = True) -> str:
         """
         Pretty-format the SQL script.
+<<<<<<< HEAD
+=======
+
+        Note that even though KQL is very different from SQL, multiple statements are
+        still separated by semi-colons.
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
         """
         return ";\n".join(statement.format(comments) for statement in self.statements)
 

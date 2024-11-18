@@ -432,11 +432,17 @@ class TestChartWarmUpCacheCommand(SupersetTestCase):
 
         # can just pass in chart as well
         result = ChartWarmUpCacheCommand(slc, None, None).run()
+<<<<<<< HEAD
         assert result == {
             "chart_id": slc.id,
             "viz_error": None,
             "viz_status": "success",
         }
+=======
+        self.assertEqual(
+            result, {"chart_id": slc.id, "viz_error": None, "viz_status": "success"}
+        )
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
 
 class TestFavoriteChartCommand(SupersetTestCase):

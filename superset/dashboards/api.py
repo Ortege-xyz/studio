@@ -151,9 +151,15 @@ def with_dashboard(
 class DashboardRestApi(BaseSupersetModelRestApi):
     datamodel = SQLAInterface(Dashboard)
 
-    @before_request(only=["thumbnail"])
+    @before_request(only=["thumbnail", "cache_dashboard_screenshot", "screenshot"])
     def ensure_thumbnails_enabled(self) -> Optional[Response]:
         if not is_feature_enabled("THUMBNAILS"):
+            return self.response_404()
+        return None
+
+    @before_request(only=["cache_dashboard_screenshot", "screenshot"])
+    def ensure_screenshots_enabled(self) -> Optional[Response]:
+        if not is_feature_enabled("ENABLE_DASHBOARD_SCREENSHOT_ENDPOINTS"):
             return self.response_404()
         return None
 
@@ -1039,6 +1045,7 @@ class DashboardRestApi(BaseSupersetModelRestApi):
             logger.info("Triggering screenshot ASYNC")
             cache_dashboard_screenshot.delay(
                 username=get_current_user(),
+<<<<<<< HEAD
                 guest_token=g.user.guest_token
                 if get_current_user() and isinstance(g.user, GuestUser)
                 else None,
@@ -1046,8 +1053,19 @@ class DashboardRestApi(BaseSupersetModelRestApi):
                 dashboard_url=dashboard_url,
                 cache_key=cache_key,
                 force=True,
+=======
+                guest_token=(
+                    g.user.guest_token
+                    if get_current_user() and isinstance(g.user, GuestUser)
+                    else None
+                ),
+                dashboard_id=dashboard.id,
+                dashboard_url=dashboard_url,
+                force=False,
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
                 thumb_size=thumb_size,
                 window_size=window_size,
+                cache_key=cache_key,
             )
             return self.response(
                 202,
@@ -1509,15 +1527,16 @@ class DashboardRestApi(BaseSupersetModelRestApi):
         try:
             body = self.embedded_config_schema.load(request.json)
 
-            with db.session.begin_nested():
-                embedded = EmbeddedDashboardDAO.upsert(
-                    dashboard,
-                    body["allowed_domains"],
-                )
+            embedded = EmbeddedDashboardDAO.upsert(
+                dashboard,
+                body["allowed_domains"],
+            )
+            db.session.commit()  # pylint: disable=consider-using-transaction
 
             result = self.embedded_response_schema.dump(embedded)
             return self.response(200, result=result)
         except ValidationError as error:
+            db.session.rollback()  # pylint: disable=consider-using-transaction
             return self.response_400(message=error.messages)
 
     @expose("/<id_or_slug>/embedded", methods=("DELETE",))

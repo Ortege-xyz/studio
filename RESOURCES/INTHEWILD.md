@@ -80,7 +80,10 @@ Join our growing community!
 - [Caizin](https://caizin.com/) [@tejaskatariya]
 - [Careem](https://www.careem.com/) [@SamraHanifCareem]
 - [Cloudsmith](https://cloudsmith.io) [@alancarson]
+<<<<<<< HEAD
 - [CnOvit](https://www.cnovit.com/) [@xieshaohu]
+=======
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 - [Cyberhaven](https://www.cyberhaven.com/) [@toliver-ch]
 - [Deepomatic](https://deepomatic.com/) [@Zanoellia]
 - [Dial Once](https://www.dial-once.com/)

@@ -323,7 +323,11 @@ class SupersetParseError(SupersetErrorException):
             if line:
                 parts.append(_(" at line %(line)d", line=line))
                 if column:
+<<<<<<< HEAD
                     parts.append(f":{column}")
+=======
+                    parts.append(_(":%(column)d", column=column))
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
             message = "".join(parts)
 
         error = SupersetError(

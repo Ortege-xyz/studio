@@ -147,6 +147,7 @@ def print_processed_batch(
         total_rows (int): The total number of rows to process.
         model (ModelType): The model being processed.
         batch_size (int): The size of the batch being processed.
+<<<<<<< HEAD
     """
     elapsed_time = datetime.now() - start_time
     elapsed_seconds = elapsed_time.total_seconds()
@@ -301,6 +302,162 @@ def delete_models_non_default_catalog(
     """
     start_time = datetime.now()
 
+=======
+    """
+    elapsed_time = datetime.now() - start_time
+    elapsed_seconds = elapsed_time.total_seconds()
+    elapsed_formatted = f"{int(elapsed_seconds // 3600):02}:{int((elapsed_seconds % 3600) // 60):02}:{int(elapsed_seconds % 60):02}"
+    rows_processed = min(offset + batch_size, total_rows)
+    logger.info(
+        f"{elapsed_formatted} - {rows_processed:,} of {total_rows:,} {model.__tablename__} rows processed "
+        f"({(rows_processed / total_rows) * 100:.2f}%)"
+    )
+
+
+def update_catalog_column(
+    session: Session, database: Database, catalog: str, downgrade: bool = False
+) -> None:
+    """
+    Update the `catalog` column in the specified models to the given catalog.
+
+    This function iterates over a list of models defined by MODELS and updates
+    the `catalog` columnto the specified catalog or None depending on the downgrade
+    parameter. The update is performed in batches to optimize performance and reduce
+    memory usage.
+
+    Parameters:
+        session (Session): The SQLAlchemy session to use for database operations.
+        database (Database): The database instance containing the models to update.
+        catalog (Catalog): The new catalog value to set in the `catalog` column or
+            the default catalog if `downgrade` is True.
+        downgrade (bool): If True, the `catalog` column is set to None where the
+            catalog matches the specified catalog.
+    """
+    start_time = datetime.now()
+
+    logger.info(f"Updating {database.database_name} models to catalog {catalog}")
+
+    for model, column in MODELS:
+        # Get the total number of rows that match the condition
+        total_rows = (
+            session.query(sa.func.count(model.id))
+            .filter(getattr(model, column) == database.id)
+            .filter(model.catalog == catalog if downgrade else True)
+            .scalar()
+        )
+
+        logger.info(
+            f"Total rows to be processed for {model.__tablename__}: {total_rows:,}"
+        )
+
+        batch_size = get_batch_size(session)
+        limit_value = min(batch_size, total_rows)
+
+        # Update in batches using row numbers
+        for i in range(0, total_rows, batch_size):
+            subquery = (
+                session.query(model.id)
+                .filter(getattr(model, column) == database.id)
+                .filter(model.catalog == catalog if downgrade else True)
+                .order_by(model.id)
+                .offset(i)
+                .limit(limit_value)
+                .subquery()
+            )
+
+            # SQLite does not support multiple-table criteria within UPDATE
+            if session.bind.dialect.name == "sqlite":
+                ids_to_update = [row.id for row in session.query(subquery.c.id).all()]
+                if ids_to_update:
+                    session.execute(
+                        sa.update(model)
+                        .where(model.id.in_(ids_to_update))
+                        .values(catalog=None if downgrade else catalog)
+                        .execution_options(synchronize_session=False)
+                    )
+            else:
+                session.execute(
+                    sa.update(model)
+                    .where(model.id == subquery.c.id)
+                    .values(catalog=None if downgrade else catalog)
+                    .execution_options(synchronize_session=False)
+                )
+
+            print_processed_batch(start_time, i, total_rows, model, batch_size)
+
+
+def update_schema_catalog_perms(
+    session: Session,
+    database: Database,
+    catalog_perm: str | None,
+    catalog: str,
+    downgrade: bool = False,
+) -> None:
+    """
+    Update schema and catalog permissions for tables and charts in a given database.
+
+    This function updates the `catalog`, `catalog_perm`, and `schema_perm` fields for
+    tables and charts associated with the specified database. If `downgrade` is True,
+    the `catalog` and `catalog_perm` fields are set to None, otherwise they are set
+    to the provided `catalog` and `catalog_perm` values.
+
+    Args:
+        session (Session): The SQLAlchemy session to use for database operations.
+        database (Database): The database object whose tables and charts will be updated.
+        catalog_perm (str): The new catalog permission to set.
+        catalog (str): The new catalog to set.
+        downgrade (bool, optional): If True, reset the `catalog` and `catalog_perm` fields to None.
+                                    Defaults to False.
+    """
+    # Mapping of table id to schema permission
+    mapping = {}
+
+    for table in (
+        session.query(SqlaTable)
+        .filter_by(database_id=database.id)
+        .filter_by(catalog=catalog if downgrade else None)
+    ):
+        schema_perm = security_manager.get_schema_perm(
+            database.database_name,
+            None if downgrade else catalog,
+            table.schema,
+        )
+        table.catalog = None if downgrade else catalog
+        table.catalog_perm = catalog_perm
+        table.schema_perm = schema_perm
+        mapping[table.id] = schema_perm
+
+    # Select all slices of type table that belong to the database
+    for chart in (
+        session.query(Slice)
+        .join(SqlaTable, Slice.datasource_id == SqlaTable.id)
+        .join(Database, SqlaTable.database_id == Database.id)
+        .filter(Database.id == database.id)
+        .filter(Slice.datasource_type == "table")
+    ):
+        # We only care about tables that exist in the mapping
+        if mapping.get(chart.datasource_id) is not None:
+            chart.catalog_perm = catalog_perm
+            chart.schema_perm = mapping[chart.datasource_id]
+
+
+def delete_models_non_default_catalog(
+    session: Session, database: Database, catalog: str
+) -> None:
+    """
+    Delete models that are not in the default catalog.
+
+    This function iterates over a list of models defined by MODELS and deletes
+    the rows where the `catalog` column does not match the specified catalog.
+
+    Parameters:
+        session (Session): The SQLAlchemy session to use for database operations.
+        database (Database): The database instance containing the models to delete.
+        catalog (Catalog): The catalog to use to filter the models to delete.
+    """
+    start_time = datetime.now()
+
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
     logger.info(f"Deleting models not in the default catalog: {catalog}")
 
     for model, column in MODELS:
@@ -381,11 +538,120 @@ def upgrade_catalog_perms(engines: set[str] | None = None) -> None:
         # analytical DB. If we can't connect to the analytical DB during the migration
         # we should stop it, since we need the default catalog in order to update
         # existing models.
+<<<<<<< HEAD
         if default_catalog := database.get_default_catalog():
             upgrade_database_catalogs(database, default_catalog, session)
 
     session.flush()
 
+
+def upgrade_database_catalogs(
+    database: Database,
+    default_catalog: str,
+    session: Session,
+) -> None:
+    """
+    Upgrade a given database to support the default catalog.
+    """
+    catalog_perm: str | None = security_manager.get_catalog_perm(
+        database.database_name,
+        default_catalog,
+    )
+    pvms: dict[str, tuple[str, ...]] = (
+        {catalog_perm: ("catalog_access",)} if catalog_perm else {}
+    )
+
+    # rename existing schema permissions to include the catalog, and also find any new
+    # schemas
+    new_schema_pvms = upgrade_schema_perms(database, default_catalog, session)
+    pvms.update(new_schema_pvms)
+
+    # update existing models that have a `catalog` column so it points to the default
+    # catalog
+    update_catalog_column(session, database, default_catalog, False)
+
+    # update `schema_perm` and `catalog_perm` for tables and charts
+    update_schema_catalog_perms(session, database, catalog_perm, default_catalog, False)
+
+    # add any new catalogs discovered and their schemas
+    new_catalog_pvms = add_non_default_catalogs(database, default_catalog, session)
+    pvms.update(new_catalog_pvms)
+
+    # add default catalog permission and permissions for any new found schemas, and also
+    # permissions for new catalogs and their schemas
+    add_pvms(session, pvms)
+
+
+def add_non_default_catalogs(
+    database: Database,
+    default_catalog: str,
+    session: Session,
+) -> dict[str, tuple[str]]:
+    """
+    Add permissions for additional catalogs and their schemas.
+    """
+    try:
+        catalogs = {
+            catalog
+            for catalog in database.get_all_catalog_names()
+            if catalog != default_catalog
+        }
+    except GenericDBException:
+        # If we can't connect to the analytical DB to fetch the catalogs we should just
+        # return. The catalog and schema permissions can be created later when the DB is
+        # edited.
+        return {}
+
+    pvms: dict[str, tuple[str]] = {}
+    for catalog in catalogs:
+        perm: str | None = security_manager.get_catalog_perm(
+            database.database_name, catalog
+        )
+        if perm:
+            pvms[perm] = ("catalog_access",)
+            new_schema_pvms = create_schema_perms(database, catalog)
+            pvms.update(new_schema_pvms)
+
+    return pvms
+=======
+        try:
+            default_catalog = database.get_default_catalog()
+        except GenericDBException as ex:
+            logger.warning(
+                "Error fetching default catalog for database %s: %s",
+                database.database_name,
+                ex,
+            )
+            continue
+
+        if default_catalog:
+            upgrade_database_catalogs(database, default_catalog, session)
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
+
+    session.flush()
+
+<<<<<<< HEAD
+def upgrade_schema_perms(
+    database: Database,
+    default_catalog: str,
+    session: Session,
+) -> dict[str, tuple[str]]:
+    """
+    Rename existing schema permissions to include the catalog.
+
+    Schema permissions are stored (and processed) as strings, in the form:
+
+        [database_name].[schema_name]
+
+    When catalogs are first introduced for a DB engine spec we need to rename any
+    existing permissions to the form:
+
+        [database_name].[default_catalog_name].[schema_name]
+
+    """
+    schemas = get_known_schemas(database.database_name, session)
+
+=======
 
 def upgrade_database_catalogs(
     database: Database,
@@ -477,6 +743,7 @@ def upgrade_schema_perms(
     """
     schemas = get_known_schemas(database.database_name, session)
 
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
     perms = {}
     for schema in schemas:
         current_perm: str | None = security_manager.get_schema_perm(
@@ -558,7 +825,21 @@ def downgrade_catalog_perms(engines: set[str] | None = None) -> None:
         ) or not db_engine_spec.supports_catalog:
             continue
 
+<<<<<<< HEAD
         if default_catalog := database.get_default_catalog():
+=======
+        try:
+            default_catalog = database.get_default_catalog()
+        except GenericDBException as ex:
+            logger.warning(
+                "Error fetching default catalog for database %s: %s",
+                database.database_name,
+                ex,
+            )
+            continue
+
+        if default_catalog:
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
             downgrade_database_catalogs(database, default_catalog, session)
 
     session.flush()

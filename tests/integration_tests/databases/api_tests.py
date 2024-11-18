@@ -1672,7 +1672,11 @@ class TestDatabaseApi(SupersetTestCase):
         example_db = get_example_database()
         uri = f"api/v1/database/{example_db.id}/select_star/birth_names/"
         rv = self.client.get(uri)
+<<<<<<< HEAD
         assert rv.status_code == 404
+=======
+        self.assertEqual(rv.status_code, 404)
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 
     def test_get_select_star_not_found_database(self):
         """

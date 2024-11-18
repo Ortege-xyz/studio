@@ -60,6 +60,11 @@ export enum FeatureFlag {
   UseAnalagousColors = 'USE_ANALAGOUS_COLORS',
   ForceSqlLabRunAsync = 'SQLLAB_FORCE_RUN_ASYNC',
   SlackEnableAvatars = 'SLACK_ENABLE_AVATARS',
+<<<<<<< HEAD
+=======
+  EnableDashboardScreenshotEndpoints = 'ENABLE_DASHBOARD_SCREENSHOT_ENDPOINTS',
+  EnableDashboardDownloadWebDriverScreenshot = 'ENABLE_DASHBOARD_DOWNLOAD_WEBDRIVER_SCREENSHOT',
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 }
 
 export type ScheduleQueriesProps = {

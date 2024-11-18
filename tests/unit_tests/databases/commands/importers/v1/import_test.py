@@ -194,6 +194,7 @@ def test_import_database_with_version(mocker: MockerFixture, session: Session) -
     assert json.loads(database.extra)["version"] == "1.1.1"
 
 
+<<<<<<< HEAD
 def test_import_database_with_user_impersonation(
     mocker: MockerFixture,
     session: Session,
@@ -218,6 +219,8 @@ def test_import_database_with_user_impersonation(
     assert database.impersonate_user is True
 
 
+=======
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
 def test_add_permissions(mocker: MockerFixture) -> None:
     """
     Test adding permissions to a database when it's imported.

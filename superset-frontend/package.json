@@ -1,6 +1,10 @@
 {
   "name": "superset",
+<<<<<<< HEAD
   "version": "4.0.2",
+=======
+  "version": "4.1.0",
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
   "description": "Superset is a data exploration platform designed to be visual, intuitive, and interactive.",
   "keywords": [
     "big",
@@ -137,6 +141,7 @@
     "d3-scale": "^2.1.2",
     "dayjs": "^1.11.13",
     "dom-to-image-more": "^3.2.0",
+    "dom-to-pdf": "^0.3.2",
     "emotion-rgba": "0.0.12",
     "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
@@ -159,7 +164,11 @@
     "moment": "^2.30.1",
     "moment-timezone": "^0.5.44",
     "mousetrap": "^1.6.5",
+<<<<<<< HEAD
     "mustache": "^4.2.0",
+=======
+    "mustache": "^2.2.1",
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
     "nanoid": "^5.0.7",
     "polished": "^4.3.1",
     "prop-types": "^15.8.1",
@@ -202,7 +211,10 @@
     "rimraf": "^6.0.1",
     "rison": "^0.1.1",
     "scroll-into-view-if-needed": "^3.1.0",
+<<<<<<< HEAD
     "simple-zstd": "^1.4.2",
+=======
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
     "tinycolor2": "^1.4.2",
     "urijs": "^1.19.8",
     "use-event-callback": "^0.1.0",
@@ -233,6 +245,7 @@
     "@hot-loader/react-dom": "^16.14.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@mihkeleidast/storybook-addon-source": "^1.0.1",
+<<<<<<< HEAD
     "@storybook/addon-actions": "8.1.11",
     "@storybook/addon-controls": "8.1.11",
     "@storybook/addon-essentials": "8.1.11",
@@ -244,6 +257,19 @@
     "@storybook/react-webpack5": "8.1.11",
     "@svgr/webpack": "^8.1.0",
     "@testing-library/dom": "^8.20.1",
+=======
+    "@storybook/addon-actions": "^8.1.11",
+    "@storybook/addon-controls": "^8.1.11",
+    "@storybook/addon-essentials": "^8.1.11",
+    "@storybook/addon-links": "^8.1.11",
+    "@storybook/addon-mdx-gfm": "^8.1.11",
+    "@storybook/preview-api": "^8.1.11",
+    "@storybook/components": "^8.1.11",
+    "@storybook/react": "^8.1.11",
+    "@storybook/react-webpack5": "^8.1.11",
+    "@svgr/webpack": "^8.0.1",
+    "@testing-library/dom": "^7.29.4",
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
     "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/react": "^12.1.5",
     "@testing-library/react-hooks": "^5.1.3",
@@ -344,10 +370,18 @@
     "source-map": "^0.7.4",
     "source-map-support": "^0.5.21",
     "speed-measure-webpack-plugin": "^1.5.0",
+<<<<<<< HEAD
     "storybook": "8.1.11",
     "style-loader": "^4.0.0",
     "thread-loader": "^4.0.2",
     "ts-loader": "^9.5.1",
+=======
+    "storybook": "^8.1.11",
+    "style-loader": "^3.3.4",
+    "thread-loader": "^3.0.4",
+    "transform-loader": "^0.2.4",
+    "ts-loader": "^9.4.4",
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
     "typescript": "^4.8.4",
     "vm-browserify": "^1.1.2",
     "webpack": "^5.95.0",
@@ -370,11 +404,15 @@
       "ansi-regex": "^4.1.1"
     },
     "puppeteer": "^22.4.1",
+<<<<<<< HEAD
     "@types/react": "^16.9.53",
     "underscore": "^1.13.7",
     "fast-glob": {
       "micromatch": "^4.0.6"
     }
+=======
+    "@types/react": "^16.9.53"
+>>>>>>> 855f4c4897771cf454c8a0172eb21e47d13f3614
   },
   "readme": "ERROR: No README data found!",
   "scarfSettings": {
