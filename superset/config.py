@@ -39,7 +39,7 @@ from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 import pkg_resources
 from celery.schedules import crontab
 from flask import Blueprint
-from flask_appbuilder.security.manager import AUTH_DB
+from flask_appbuilder.security.manager import AUTH_OAUTH
 from flask_caching.backends.base import BaseCache
 from pandas import Series
 from pandas._libs.parsers import STR_NA_VALUES  # pylint: disable=no-name-in-module
@@ -310,7 +310,50 @@ FAB_API_SWAGGER_UI = True
 # AUTH_DB : Is for database (username/password)
 # AUTH_LDAP : Is for LDAP
 # AUTH_REMOTE_USER : Is for using REMOTE_USER from web server
-AUTH_TYPE = AUTH_DB
+AUTH_TYPE = AUTH_OAUTH
+
+KEYCLOAK_CLIENT_SECRET = os.environ.get("KEYCLOAK_CLIENT_SECRET", "")
+KEYCLOAK_CLIENT_ID = os.environ.get("KEYCLOAK_CLIENT_ID", "")
+KEYCLOAK_URL = os.environ.get("KEYCLOAK_URL", "")
+KEYCLOAK_REALM = os.environ.get("KEYCLOAK_REALM", "")
+
+# Setup auth via OAUTH in keycloak
+OAUTH_PROVIDERS = [{
+    'name': 'keycloak',
+    'icon': 'fa-key',
+    'token_key': 'access_token',
+    'remote_app': {
+        'client_id': KEYCLOAK_CLIENT_ID ,
+        'client_secret': KEYCLOAK_CLIENT_SECRET,
+        'api_base_url': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/',
+        'jwks_uri': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/certs',
+        'server_metadata_url': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/.well-known/openid-configuration',
+        'client_kwargs': {
+            'scope': 'openid email profile roles',
+            'redirect_uri': 'https://localhost:8088/oauth-authorized/keycloak',
+            'userinfo_uri': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/userinfo',
+            'verify_signature': True,
+            'verify_exp': True
+        },
+        'request_token_url': None,
+        'access_token_url': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/token',
+        'authorize_url': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/auth'
+    },
+}]
+
+# URL Configuration
+PREFERRED_URL_SCHEME = 'https'
+
+# Authentication Configuration
+AUTH_USER_REGISTRATION = True
+AUTH_USER_REGISTRATION_ROLE = "sql_lab"
+AUTH_ROLES_SYNC_AT_LOGIN = True
+AUTH_ROLES_MAPPING = {
+    "studio_admin": ["Admin"],
+    "studio_alpha": ["Alpha"],
+    "studio_gamma": ["Gamma"],
+    "studio_sqllab": ["sql_lab"],
+}
 
 # Uncomment to setup Full admin role name
 # AUTH_ROLE_ADMIN = 'Admin'
