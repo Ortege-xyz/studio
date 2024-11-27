@@ -325,19 +325,19 @@ OAUTH_PROVIDERS = [{
     'remote_app': {
         'client_id': KEYCLOAK_CLIENT_ID ,
         'client_secret': KEYCLOAK_CLIENT_SECRET,
-        'api_base_url': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/',
-        'jwks_uri': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/certs',
-        'server_metadata_url': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/.well-known/openid-configuration',
+        'api_base_url': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/',
+        'jwks_uri': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/certs',
+        'server_metadata_url': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/.well-known/openid-configuration',
         'client_kwargs': {
             'scope': 'openid email profile roles',
-            'redirect_uri': 'https://localhost:8088/oauth-authorized/keycloak',
-            'userinfo_uri': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/userinfo',
+            'redirect_uri': 'http://localhost:8088/oauth-authorized/keycloak',
+            'userinfo_uri': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/userinfo',
             'verify_signature': True,
             'verify_exp': True
         },
         'request_token_url': None,
-        'access_token_url': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/token',
-        'authorize_url': f'https://{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/auth'
+        'access_token_url': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/token',
+        'authorize_url': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/auth'
     },
 }]
 
