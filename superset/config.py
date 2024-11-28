@@ -346,7 +346,7 @@ PREFERRED_URL_SCHEME = 'https'
 
 # Authentication Configuration
 AUTH_USER_REGISTRATION = True
-AUTH_USER_REGISTRATION_ROLE = "sql_lab"
+AUTH_USER_REGISTRATION_ROLE = "Alpha"
 AUTH_ROLES_SYNC_AT_LOGIN = True
 AUTH_ROLES_MAPPING = {
     "studio_admin": ["Admin"],
