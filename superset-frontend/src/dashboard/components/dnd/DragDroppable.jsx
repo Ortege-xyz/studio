@@ -17,7 +17,7 @@
  * under the License.
  */
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import React from 'react';
+import { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { DragSource, DropTarget } from 'react-dnd';
 import cx from 'classnames';
@@ -95,11 +95,6 @@ const DragDroppableStyles = styled.div`
       z-index: 10;
     }
 
-    &.empty-droptarget--full > .drop-indicator--top {
-      height: 100%;
-      opacity: 0.3;
-    }
-
     & {
       .drop-indicator {
         display: block;
@@ -117,7 +112,7 @@ const DragDroppableStyles = styled.div`
   `};
 `;
 // export unwrapped component for testing
-export class UnwrappedDragDroppable extends React.PureComponent {
+export class UnwrappedDragDroppable extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {

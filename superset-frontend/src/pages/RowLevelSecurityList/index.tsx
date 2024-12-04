@@ -17,7 +17,7 @@
  * under the License.
  */
 import { t, styled, SupersetClient } from '@superset-ui/core';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import ConfirmStatusChange from 'src/components/ConfirmStatusChange';
 import Icons from 'src/components/Icons';
 import ListView, {
@@ -285,26 +285,6 @@ function RowLevelSecurityList(props: RLSProps) {
         id: 'changed_by',
         input: 'select',
         operator: FilterOperator.RelationOneMany,
-        unfilteredLabel: t('All'),
-        fetchSelects: createFetchRelated(
-          'rowlevelsecurity',
-          'changed_by',
-          createErrorHandler(errMsg =>
-            t(
-              'An error occurred while fetching dataset datasource values: %s',
-              errMsg,
-            ),
-          ),
-          user,
-        ),
-        paginate: true,
-      },
-      {
-        Header: t('Modified by'),
-        key: 'changed_by',
-        id: 'changed_by',
-        input: 'select',
-        operator: FilterOperator.relationOneMany,
         unfilteredLabel: t('All'),
         fetchSelects: createFetchRelated(
           'rowlevelsecurity',

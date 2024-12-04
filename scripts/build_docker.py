@@ -1,21 +1,10 @@
 #!/usr/bin/env python3
 
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
+# This script is not maintained by upstream anymore.
+# Upstream uses https://github.com/apache-superset/supersetbot/blob/main/src/docker.js
+# We will keep this script because it has some custom changes for our needs.
+# Whenever upstream supersetbot docker script is changed, we will update this script properly.
+
 import os
 import re
 import subprocess
@@ -25,7 +14,7 @@ import click
 
 REPO = os.getenv("DOCKERHUB_REPO", "apache/superset")
 CACHE_REPO = f"{REPO}-cache"
-BASE_PY_IMAGE = "3.9-slim-bookworm"
+BASE_PY_IMAGE = "3.10-slim-bookworm"
 
 MAIN_BRANCH = os.getenv("MAIN_BRANCH", "master")
 
@@ -83,7 +72,7 @@ def is_latest_release(release: str) -> bool:
     return "SKIP_TAG::false" in output
 
 
-def make_docker_tag(l: list[str]) -> str:
+def make_docker_tag(l: list[str]) -> str:  # noqa: E741
     return f"{REPO}:" + "-".join([o for o in l if o])
 
 
@@ -141,7 +130,7 @@ def get_docker_command(
     build_context_ref: str,
     force_latest: bool = False,
 ) -> str:
-    tag = ""
+    tag = ""  # noqa: F841
     build_target = ""
     py_ver = BASE_PY_IMAGE
     docker_context = "."
@@ -153,6 +142,13 @@ def get_docker_command(
     elif build_preset == "py310":
         build_target = "lean"
         py_ver = "3.10-slim-bookworm"
+    elif build_preset == "python-base":
+        build_target = "python-base"
+    elif build_preset == "superset-node":
+        build_target = "superset-node"
+    elif build_preset == "py311":
+        build_target = "lean"
+        py_ver = "3.11-slim-bookworm"
     elif build_preset == "websocket":
         build_target = ""
         docker_context = "superset-websocket"
@@ -218,7 +214,7 @@ def get_docker_command(
 @click.command()
 @click.argument(
     "build_preset",
-    type=click.Choice(["lean", "dev", "dockerize", "websocket", "py310", "ci"]),
+    type=click.Choice(["lean", "dev", "dockerize", "websocket", "py311", "ci"]),
 )
 @click.argument("build_context", type=click.Choice(["push", "pull_request", "release"]))
 @click.option(
@@ -288,7 +284,7 @@ def main(
         script = script + docker_build_command
         if verbose:
             run_cmd("cat Dockerfile")
-        stdout = run_cmd(script)
+        stdout = run_cmd(script)  # noqa: F841
     else:
         print("Dry Run - Docker Build Command:")
         print(docker_build_command)

@@ -25,6 +25,7 @@ import {
   CategoricalColorNamespace,
   CurrencyFormatter,
   ensureIsArray,
+  tooltipHtml,
   GenericDataType,
   getCustomFormatter,
   getMetricLabel,
@@ -38,6 +39,7 @@ import {
   isTimeseriesAnnotationLayer,
   t,
   TimeseriesChartDataResponseResult,
+  NumberFormats,
 } from '@superset-ui/core';
 import {
   extractExtraMetrics,
@@ -45,8 +47,9 @@ import {
   isDerivedSeries,
   getTimeOffset,
 } from '@superset-ui/chart-controls';
-import { EChartsCoreOption, SeriesOption } from 'echarts';
-import { LineStyleOption } from 'echarts/types/src/util/types';
+import type { EChartsCoreOption } from 'echarts/core';
+import type { LineStyleOption } from 'echarts/types/src/util/types';
+import type { SeriesOption } from 'echarts';
 import {
   EchartsTimeseriesChartProps,
   EchartsTimeseriesFormData,
@@ -62,6 +65,7 @@ import {
   extractDataTotalValues,
   extractSeries,
   extractShowValueIndexes,
+  extractTooltipKeys,
   getAxisType,
   getColtypesMapping,
   getLegendProps,
@@ -246,7 +250,7 @@ export default function transformProps(
     legendState,
   });
   const seriesContexts = extractForecastSeriesContexts(
-    Object.values(rawSeries).map(series => series.name as string),
+    rawSeries.map(series => series.name as string),
   );
   const isAreaExpand = stack === StackControlsValue.Expand;
   const xAxisDataType = dataTypes?.[xAxisLabel] ?? dataTypes?.[xAxisOrig];
@@ -255,7 +259,9 @@ export default function transformProps(
   const series: SeriesOption[] = [];
 
   const forcePercentFormatter = Boolean(contributionMode || isAreaExpand);
-  const percentFormatter = getPercentFormatter(yAxisFormat);
+  const percentFormatter = forcePercentFormatter
+    ? getPercentFormatter(yAxisFormat)
+    : getPercentFormatter(NumberFormats.PERCENT_2_POINT);
   const defaultFormatter = currencyFormat?.symbol
     ? new CurrencyFormatter({ d3Format: yAxisFormat, currency: currencyFormat })
     : getNumberFormatter(yAxisFormat);
@@ -322,6 +328,7 @@ export default function transformProps(
         sliceId,
         isHorizontal,
         lineStyle,
+        timeCompare: array,
       },
     );
     if (transformedSeries) {
@@ -533,41 +540,70 @@ export default function transformProps(
           ? params[0].value[xIndex]
           : params.value[xIndex];
         const forecastValue: any[] = richTooltip ? params : [params];
-
-        if (richTooltip && tooltipSortByMetric) {
-          forecastValue.sort((a, b) => b.data[yIndex] - a.data[yIndex]);
-        }
-
-        const rows: string[] = [];
+        const sortedKeys = extractTooltipKeys(
+          forecastValue,
+          yIndex,
+          richTooltip,
+          tooltipSortByMetric,
+        );
         const forecastValues: Record<string, ForecastValue> =
           extractForecastValuesFromTooltipParams(forecastValue, isHorizontal);
 
-        Object.keys(forecastValues).forEach(key => {
-          const value = forecastValues[key];
-          if (value.observation === 0 && stack) {
-            return;
-          }
-          // if there are no dimensions, key is a verbose name of a metric,
-          // otherwise it is a comma separated string where the first part is metric name
-          const formatterKey =
-            groupBy.length === 0 ? inverted[key] : labelMap[key]?.[0];
-          const content = formatForecastTooltipSeries({
-            ...value,
-            seriesName: key,
-            formatter: forcePercentFormatter
-              ? percentFormatter
-              : getCustomFormatter(customFormatters, metrics, formatterKey) ??
-                defaultFormatter,
+        const isForecast = Object.values(forecastValues).some(
+          value =>
+            value.forecastTrend || value.forecastLower || value.forecastUpper,
+        );
+
+        const formatter = forcePercentFormatter
+          ? percentFormatter
+          : getCustomFormatter(customFormatters, metrics) ?? defaultFormatter;
+
+        const rows: string[][] = [];
+        const total = Object.values(forecastValues).reduce(
+          (acc, value) =>
+            value.observation !== undefined ? acc + value.observation : acc,
+          0,
+        );
+        const showTotal = Boolean(isMultiSeries) && richTooltip && !isForecast;
+        const showPercentage = showTotal && !forcePercentFormatter;
+        const keys = Object.keys(forecastValues);
+        let focusedRow;
+        sortedKeys
+          .filter(key => keys.includes(key))
+          .forEach(key => {
+            const value = forecastValues[key];
+            if (value.observation === 0 && stack) {
+              return;
+            }
+            const row = formatForecastTooltipSeries({
+              ...value,
+              seriesName: key,
+              formatter,
+            });
+            if (showPercentage && value.observation !== undefined) {
+              row.push(
+                percentFormatter.format(value.observation / (total || 1)),
+              );
+            }
+            rows.push(row);
+            if (key === focusedSeries) {
+              focusedRow = rows.length - 1;
+            }
           });
-          const contentStyle =
-            key === focusedSeries ? 'font-weight: 700' : 'opacity: 0.7';
-          rows.push(`<span style="${contentStyle}">${content}</span>`);
-        });
         if (stack) {
           rows.reverse();
+          if (focusedRow !== undefined) {
+            focusedRow = rows.length - focusedRow - 1;
+          }
         }
-        rows.unshift(`${tooltipFormatter(xValue)}`);
-        return rows.join('<br />');
+        if (showTotal) {
+          const totalRow = ['Total', formatter.format(total)];
+          if (showPercentage) {
+            totalRow.push(percentFormatter.format(1));
+          }
+          rows.push(totalRow);
+        }
+        return tooltipHtml(rows, tooltipFormatter(xValue), focusedRow);
       },
     },
     legend: {
@@ -604,6 +640,18 @@ export default function transformProps(
             end: TIMESERIES_CONSTANTS.dataZoomEnd,
             bottom: TIMESERIES_CONSTANTS.zoomBottom,
             yAxisIndex: isHorizontal ? 0 : undefined,
+          },
+          {
+            type: 'inside',
+            yAxisIndex: 0,
+            zoomOnMouseWheel: false,
+            moveOnMouseWheel: true,
+          },
+          {
+            type: 'inside',
+            xAxisIndex: 0,
+            zoomOnMouseWheel: false,
+            moveOnMouseWheel: true,
           },
         ]
       : [],

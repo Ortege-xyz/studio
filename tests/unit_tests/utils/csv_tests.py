@@ -15,11 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import sys
-
 import pandas as pd
 import pyarrow as pa
-import pytest
+import pytest  # noqa: F401
 
 from superset.utils import csv
 

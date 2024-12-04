@@ -24,7 +24,7 @@ import {
   SupersetClient,
   t,
 } from '@superset-ui/core';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, MouseEvent } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import rison from 'rison';
 import {
@@ -382,24 +382,11 @@ function SavedQueryList({
         size: 'xl',
       },
       {
-        Cell: ({
-          row: {
-            original: {
-              changed_by: changedBy,
-              changed_on_delta_humanized: changedOn,
-            },
-          },
-        }: any) => <ModifiedInfo user={changedBy} date={changedOn} />,
-        Header: t('Last modified'),
-        accessor: 'changed_on_delta_humanized',
-        size: 'xl',
-      },
-      {
         Cell: ({ row: { original } }: any) => {
           const handlePreview = () => {
             handleSavedQueryPreview(original.id);
           };
-          const handleEdit = ({ metaKey }: React.MouseEvent) =>
+          const handleEdit = ({ metaKey }: MouseEvent) =>
             openInSqlLab(original.id, Boolean(metaKey));
           const handleCopy = () => copyQueryLink(original.id);
           const handleExport = () => handleBulkSavedQueryExport([original]);
@@ -514,7 +501,7 @@ function SavedQueryList({
               id: 'tags',
               key: 'tags',
               input: 'select',
-              operator: FilterOperator.SavedQueryTags,
+              operator: FilterOperator.SavedQueryTagById,
               fetchSelects: loadTags,
             },
           ]

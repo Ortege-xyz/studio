@@ -17,7 +17,7 @@
  * under the License.
  */
 import '@testing-library/jest-dom/extend-expect';
-import React, { ReactNode, ReactElement } from 'react';
+import { ReactNode, ReactElement } from 'react';
 import {
   render,
   RenderOptions,

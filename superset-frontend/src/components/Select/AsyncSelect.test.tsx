@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React from 'react';
 import {
   createEvent,
   fireEvent,
@@ -987,18 +986,6 @@ test('onChange is called with the value property when pasting an option that was
       expect.anything(),
     ),
   );
-});
-
-test('does not fire onChange if the same value is selected in single mode', async () => {
-  const onChange = jest.fn();
-  render(<AsyncSelect {...defaultProps} onChange={onChange} />);
-  const optionText = 'Emma';
-  await open();
-  expect(onChange).toHaveBeenCalledTimes(0);
-  userEvent.click(await findSelectOption(optionText));
-  expect(onChange).toHaveBeenCalledTimes(1);
-  userEvent.click(await findSelectOption(optionText));
-  expect(onChange).toHaveBeenCalledTimes(1);
 });
 
 test('does not fire onChange if the same value is selected in single mode', async () => {
