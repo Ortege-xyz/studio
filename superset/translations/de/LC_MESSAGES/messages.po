@@ -179,13 +179,14 @@ msgstr ""
 
 #, python-format
 msgid ""
-"%(message)s\n"
-"This may be triggered by: \n"
-"%(issues)s"
+"The number of results displayed is limited to %(rows)d by the "
+"configuration DISPLAY_MAX_ROW. Please add additional limits/filters or "
+"download to csv to see more rows up to the %(limit)d limit."
 msgstr ""
-"%(message)s\n"
-"Dies kann ausgelöst werden durch: \n"
-"%(issues)s"
+"Die Anzahl der angezeigten Ergebnisse ist durch die Konfiguration "
+"DISPLAY_MAX_ROW auf %(rows)d begrenzt. Bitte fügen Sie zusätzliche "
+"Limits/Filter hinzu oder laden Sie sie als CSDV-Datei herunter, um "
+"weitere Zeilen bis zum %(limit)d-Limit anzuzeigen."
 
 #, python-format
 msgid "%(name)s.csv"
@@ -4077,8 +4078,6 @@ msgid ""
 "Defines the grouping of entities. Each series is shown as a specific "
 "color on the chart and has a legend toggle"
 msgstr ""
-"Definiert die Gruppierung von Entitäten. Jede Serie wird als bestimmte "
-"Farbe im Diagramm angezeigt und verfügt über einen Legenden-Umschalter"
 
 msgid ""
 "Defines the size of the rolling window function, relative to the time "
@@ -5318,6 +5317,8 @@ msgstr "Erstellt"
 
 msgid "Featured color palettes"
 msgstr ""
+"Dies kann entweder eine IP-Adresse (z.B. 127.0.0.1) oder ein Domainname "
+"(z.B. mydatabase.com) sein."
 
 msgid "February"
 msgstr "Februar"
@@ -5448,24 +5449,13 @@ msgid "Filters out of scope (%d)"
 msgstr "Filter außerhalb des Gültigkeitsbereichs (%d)"
 
 msgid ""
-"Filters with the same group key will be ORed together within the group, "
-"while different filter groups will be ANDed together. Undefined group "
-"keys are treated as unique groups, i.e. are not grouped together. For "
-"example, if a table has three filters, of which two are for departments "
-"Finance and Marketing (group key = 'department'), and one refers to the "
-"region Europe (group key = 'region'), the filter clause would apply the "
-"filter (department = 'Finance' OR department = 'Marketing') AND (region ="
-" 'Europe')."
+"This color scheme is being overridden by custom label colors.\n"
+"    Check the JSON metadata in the Advanced settings"
 msgstr ""
-"Filter mit demselben Gruppenschlüssel werden innerhalb der Gruppe ODER-"
-"verknüpft, während verschiedene Filtergruppen zusammen UND-verknüpft "
-"werden. Undefinierte Gruppenschlüssel werden als eindeutige Gruppen "
-"behandelt, d.h. nicht gruppiert. Wenn eine Tabelle beispielsweise drei "
-"Filter hat, von denen zwei für die Abteilungen Finanzen und Marketing "
-"(Gruppenschlüssel = 'Abteilung') sind und einer sich auf die Region "
-"Europa bezieht (Gruppenschlüssel = 'Region'), würde die Filterklausel den"
-" Filter anwenden (Abteilung = 'Finanzen' ODER Abteilung = 'Marketing') "
-"UND (Region = 'Europa')."
+"Dieses Farbschema wird durch benutzerdefinierte Beschriftungsfarben "
+"überschrieben.\n"
+"              Überprüfen Sie die JSON-Metadaten in den erweiterten "
+"Einstellungen"
 
 #, fuzzy
 msgid "Find"
@@ -13895,7 +13885,56 @@ msgid "Yes, overwrite changes"
 msgstr "Ja, Änderungen überschreiben"
 
 #, python-format
-msgid "You are adding tags to %s %ss"
+msgid "Total (%(aggfunc)s)"
+msgstr "Insgesamt (%(aggfunc)s)"
+
+#: superset-frontend/plugins/plugin-chart-pivot-table/src/react-pivottable/TableRenderers.jsx:496
+#: superset-frontend/plugins/plugin-chart-pivot-table/src/react-pivottable/TableRenderers.jsx:561
+#: superset-frontend/plugins/plugin-chart-pivot-table/src/react-pivottable/TableRenderers.jsx:782
+#, python-format
+msgid "Total (%(aggregatorName)s)"
+msgstr "Insgesamt (%(aggregatorName)s)"
+
+#: superset-frontend/packages/superset-ui-chart-controls/src/constants.ts:71
+msgid "Total value"
+msgstr "Gesamtwert"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Pie/transformProps.ts:339
+#: superset-frontend/plugins/plugin-chart-echarts/src/Sunburst/transformProps.ts:388
+#, python-format
+msgid "Total: %s"
+msgstr "Gesamt: %s"
+
+#: superset-frontend/plugins/plugin-chart-table/src/TableChart.tsx:641
+msgid "Totals"
+msgstr "Summen"
+
+#: superset-frontend/src/SqlLab/components/ResultSet/index.tsx:457
+msgid "Track job"
+msgstr "Auftrag verfolgen"
+
+#: superset-frontend/plugins/legacy-plugin-chart-map-box/src/index.js:40
+#: superset-frontend/plugins/plugin-chart-echarts/src/Graph/index.ts:49
+#: superset-frontend/plugins/plugin-chart-echarts/src/MixedTimeseries/index.ts:78
+#: superset-frontend/plugins/plugin-chart-echarts/src/Timeseries/Area/index.ts:72
+#: superset-frontend/plugins/plugin-chart-echarts/src/Timeseries/Regular/Bar/index.ts:81
+#: superset-frontend/plugins/plugin-chart-echarts/src/Timeseries/Regular/Scatter/index.ts:75
+#: superset-frontend/plugins/plugin-chart-echarts/src/Timeseries/Regular/SmoothLine/index.ts:76
+#: superset-frontend/plugins/plugin-chart-echarts/src/Timeseries/Step/index.ts:66
+#: superset-frontend/plugins/plugin-chart-echarts/src/Timeseries/index.ts:65
+msgid "Transformable"
+msgstr "Transportierbar"
+
+#: superset-frontend/src/dashboard/util/backgroundStyleOptions.ts:25
+msgid "Transparent"
+msgstr "Transparent"
+
+#: superset-frontend/plugins/plugin-chart-pivot-table/src/plugin/controlPanel.tsx:257
+msgid "Transpose pivot"
+msgstr "Pivot transponieren"
+
+#: superset-frontend/packages/superset-ui-chart-controls/src/shared-controls/customControls.tsx:168
+msgid "Treat values as categorical."
 msgstr ""
 
 msgid ""

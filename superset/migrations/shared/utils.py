@@ -85,7 +85,21 @@ def table_has_index(table: str, index: str) -> bool:
     try:
         return any(ind["name"] == index for ind in insp.get_indexes(table))
     except NoSuchTableError:
-        return False
+        pass
+
+    return None
+
+
+def table_has_column(table_name: str, column_name: str) -> bool:
+    """
+    Checks if a column exists in a given table.
+
+    :param table_name: A table name
+    :param column_name: A column name
+    :returns: True iff the column exists in the table
+    """
+
+    return bool(get_table_column(table_name, column_name))
 
 
 uuid_by_dialect = {

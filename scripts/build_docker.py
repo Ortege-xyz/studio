@@ -1,21 +1,10 @@
 #!/usr/bin/env python3
 
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
+# This script is not maintained by upstream anymore.
+# Upstream uses https://github.com/apache-superset/supersetbot/blob/main/src/docker.js
+# We will keep this script because it has some custom changes for our needs.
+# Whenever upstream supersetbot docker script is changed, we will update this script properly.
+
 import os
 import re
 import subprocess
@@ -23,10 +12,11 @@ from textwrap import dedent
 
 import click
 
-REPO = "apache/superset"
+REPO = os.getenv("DOCKERHUB_REPO", "apache/superset")
 CACHE_REPO = f"{REPO}-cache"
 BASE_PY_IMAGE = "3.10-slim-bookworm"
 
+MAIN_BRANCH = os.getenv("MAIN_BRANCH", "master")
 
 def run_cmd(command: str, raise_on_failure: bool = True) -> str:
     process = subprocess.Popen(
@@ -50,7 +40,7 @@ def get_git_sha() -> str:
     return run_cmd("git rev-parse HEAD").strip()
 
 
-def get_build_context_ref(build_context: str) -> str:
+def get_build_context_ref() -> str:
     """
     Given a context, return a ref:
     - if context is pull_request, return the PR's id
@@ -124,8 +114,8 @@ def get_docker_tags(
         if is_latest or force_latest:
             # add a latest tag
             tags.add(make_docker_tag(["latest"] + tag_chunks))
-    elif build_context == "push" and build_context_ref == "master":
-        tags.add(make_docker_tag(["master"] + tag_chunks))
+    elif build_context == "push" and build_context_ref == MAIN_BRANCH:
+        tags.add(make_docker_tag([MAIN_BRANCH] + tag_chunks))
     elif build_context == "pull_request":
         tags.add(make_docker_tag([f"pr-{build_context_ref}"] + tag_chunks))
     return tags
@@ -149,6 +139,13 @@ def get_docker_command(
         build_target = "dev"
     elif build_preset == "lean":
         build_target = "lean"
+    elif build_preset == "py310":
+        build_target = "lean"
+        py_ver = "3.10-slim-bookworm"
+    elif build_preset == "python-base":
+        build_target = "python-base"
+    elif build_preset == "superset-node":
+        build_target = "superset-node"
     elif build_preset == "py311":
         build_target = "lean"
         py_ver = "3.11-slim-bookworm"
@@ -166,7 +163,7 @@ def get_docker_command(
 
     # Try to get context reference if missing
     if not build_context_ref:
-        build_context_ref = get_build_context_ref(build_context)
+        build_context_ref = get_build_context_ref()
 
     tags = get_docker_tags(
         build_preset,
@@ -254,6 +251,9 @@ def main(
             "--force-latest can only be applied if the build context is set to 'release'"
         )
         exit(1)
+
+    if not build_context_ref:
+        build_context_ref = get_build_context_ref()
 
     if build_context == "release" and not build_context_ref.strip():
         print("Release number has to be provided")

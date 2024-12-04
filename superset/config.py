@@ -42,7 +42,7 @@ import click
 import pkg_resources
 from celery.schedules import crontab
 from flask import Blueprint
-from flask_appbuilder.security.manager import AUTH_DB
+from flask_appbuilder.security.manager import AUTH_OAUTH
 from flask_caching.backends.base import BaseCache
 from pandas import Series
 from pandas._libs.parsers import STR_NA_VALUES
@@ -307,10 +307,10 @@ AUTH_RATE_LIMIT = "5 per second"
 # GLOBALS FOR APP Builder
 # ------------------------------
 # Uncomment to setup Your App name
-APP_NAME = "Superset"
+APP_NAME = "Ortege"
 
 # Specify the App icon
-APP_ICON = "/static/assets/images/superset-logo-horiz.png"
+APP_ICON = "/static/assets/images/ortege-logo-horiz.png"
 
 # Specify where clicking the logo would take the user'
 # Default value of None will take you to '/superset/welcome'
@@ -336,7 +336,50 @@ FAB_API_SWAGGER_UI = True
 # AUTH_DB : Is for database (username/password)
 # AUTH_LDAP : Is for LDAP
 # AUTH_REMOTE_USER : Is for using REMOTE_USER from web server
-AUTH_TYPE = AUTH_DB
+AUTH_TYPE = AUTH_OAUTH
+
+KEYCLOAK_CLIENT_SECRET = os.environ.get("KEYCLOAK_CLIENT_SECRET", "")
+KEYCLOAK_CLIENT_ID = os.environ.get("KEYCLOAK_CLIENT_ID", "")
+KEYCLOAK_URL = os.environ.get("KEYCLOAK_URL", "")
+KEYCLOAK_REALM = os.environ.get("KEYCLOAK_REALM", "")
+
+# Setup auth via OAUTH in keycloak
+OAUTH_PROVIDERS = [{
+    'name': 'keycloak',
+    'icon': 'fa-key',
+    'token_key': 'access_token',
+    'remote_app': {
+        'client_id': KEYCLOAK_CLIENT_ID ,
+        'client_secret': KEYCLOAK_CLIENT_SECRET,
+        'api_base_url': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/',
+        'jwks_uri': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/certs',
+        'server_metadata_url': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/.well-known/openid-configuration',
+        'client_kwargs': {
+            'scope': 'openid email profile roles',
+            'redirect_uri': 'http://localhost:8088/oauth-authorized/keycloak',
+            'userinfo_uri': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/userinfo',
+            'verify_signature': True,
+            'verify_exp': True
+        },
+        'request_token_url': None,
+        'access_token_url': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/token',
+        'authorize_url': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/auth'
+    },
+}]
+
+# URL Configuration
+PREFERRED_URL_SCHEME = 'https'
+
+# Authentication Configuration
+AUTH_USER_REGISTRATION = True
+AUTH_USER_REGISTRATION_ROLE = "Alpha"
+AUTH_ROLES_SYNC_AT_LOGIN = True
+AUTH_ROLES_MAPPING = {
+    "studio_admin": ["Admin"],
+    "studio_alpha": ["Alpha"],
+    "studio_gamma": ["Gamma"],
+    "studio_sqllab": ["sql_lab"],
+}
 
 # Uncomment to setup Full admin role name
 # AUTH_ROLE_ADMIN = 'Admin'
@@ -650,7 +693,16 @@ COMMON_BOOTSTRAP_OVERRIDES_FUNC: Callable[  # noqa: E731
 #     }]
 
 # This is merely a default
-EXTRA_CATEGORICAL_COLOR_SCHEMES: list[dict[str, Any]] = []
+# EXTRA_CATEGORICAL_COLOR_SCHEMES: list[dict[str, Any]] = []
+EXTRA_CATEGORICAL_COLOR_SCHEMES = [{
+    "id": 'stacksColorSet',
+    "description": '',
+    "label": 'Stacks Color Schema',
+    "isDefault": True,
+    "colors":
+        ['#FB6331', '#264653', '#2A9D8F', '#E9C46A', '#F7DBA7', '#1E212B', '#4D8B31',
+        '#FFC800', '#FFFFFF', '#78E0DC', '#8EEDF7', '#9977BB', '#A1CDF1', '#555B6E']
+}]
 
 # THEME_OVERRIDES is used for adding custom theme to superset
 # example code for "My theme" custom scheme
@@ -1297,6 +1349,15 @@ DASHBOARD_TEMPLATE_ID = None
 # as such `create_engine(url, **params)`
 DB_CONNECTION_MUTATOR = None
 
+# A set of disallowed SQL functions per engine. This is used to restrict the use of
+# unsafe SQL functions in SQL Lab and Charts. The keys of the dictionary are the engine
+# names, and the values are sets of disallowed functions.
+DISALLOWED_SQL_FUNCTIONS: dict[str, set[str]] = {
+    "postgresql": {"version", "query_to_xml", "inet_server_addr", "inet_client_addr"},
+    "clickhouse": {"url"},
+    "mysql": {"version"},
+}
+
 
 # A callable that is invoked for every invocation of DB Engine Specs
 # which allows for custom validation of the engine URI.
@@ -1576,13 +1637,21 @@ TALISMAN_CONFIG = {
             "'self'",
             "https://api.mapbox.com",
             "https://events.mapbox.com",
+            "https://*.clarity.ms",
+            "https://c.bing.com",
         ],
         "object-src": "'none'",
         "style-src": [
             "'self'",
             "'unsafe-inline'",
         ],
-        "script-src": ["'self'", "'strict-dynamic'"],
+        "script-src": [
+            "'self'", 
+            "'strict-dynamic'", 
+            "https://*.clarity.ms", 
+            "https://c.bing.com", 
+            "'unsafe-inline'",
+        ],
     },
     "content_security_policy_nonce_in": ["script-src"],
     "force_https": False,
@@ -1606,13 +1675,21 @@ TALISMAN_DEV_CONFIG = {
             "'self'",
             "https://api.mapbox.com",
             "https://events.mapbox.com",
+            "https://*.clarity.ms",
+            "https://c.bing.com",
         ],
         "object-src": "'none'",
         "style-src": [
             "'self'",
             "'unsafe-inline'",
         ],
-        "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        "script-src": [
+            "'self'", 
+            "'strict-dynamic'", 
+            "https://*.clarity.ms", 
+            "'unsafe-inline'",
+            "'unsafe-eval'"
+        ],
     },
     "content_security_policy_nonce_in": ["script-src"],
     "force_https": False,

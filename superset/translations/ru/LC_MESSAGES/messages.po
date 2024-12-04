@@ -112,29 +112,11 @@ msgid " source code of Superset's sandboxed parser"
 msgstr " исходный код sandboxed парсера Superset"
 
 msgid ""
-" standard to ensure that the lexicographical ordering\n"
-"                      coincides with the chronological ordering. If the\n"
-"                      timestamp format does not adhere to the ISO 8601 "
-"standard\n"
-"                      you will need to define an expression and type for\n"
-"                      transforming the string into a date or timestamp. "
-"Note\n"
-"                      currently time zones are not supported. If time is "
-"stored\n"
-"                      in epoch format, put `epoch_s` or `epoch_ms`. If no"
-" pattern\n"
-"                      is specified we fall back to using the optional "
-"defaults on a per\n"
-"                      database/column name level via the extra parameter."
+"Select values in highlighted field(s) in the control panel. Then run the "
+"query by clicking on the %s button."
 msgstr ""
-" стандарта для обеспечения того, чтобы лексикографический порядок "
-"совпадал с хронологическим порядком. Если формат временной метки не "
-"соответствует стандарту ISO 8601, вам нужно будет определить выражение и "
-"тип для преобразования строки в дату или временную метку. В настоящее "
-"время часовые пояса не поддерживаются. Если время хранится в формате "
-"эпохи, введите \\`epoch_s\\` или \\`epoch_ms\\`. Если шаблон не указан, "
-"будут использованы необязательные значения по умолчанию на уровне имен "
-"для каждой базы данных/столбца с помощью дополнительного параметра."
+"Выберите значения в обязательных полях на панели управления. Затем "
+"запустите запрос, нажав на кнопку %s."
 
 msgid " to add calculated columns"
 msgstr " для добавления вычисляемых столбцов"
@@ -179,13 +161,9 @@ msgstr ""
 
 #, python-format
 msgid ""
-"%(message)s\n"
-"This may be triggered by: \n"
-"%(issues)s"
+"The following entries in `series_columns` are missing in `columns`: "
+"%(columns)s. "
 msgstr ""
-"%(message)s\n"
-"Возможные причины: \n"
-"%(issues)s"
 
 #, python-format
 msgid "%(name)s.csv"
@@ -232,13 +210,11 @@ msgstr "Получено строк: %(rows)d"
 
 #, python-format
 msgid ""
-"%(subtitle)s\n"
-"This may be triggered by:\n"
-" %(issue)s"
+"The query was killed after %(sqllab_timeout)s seconds. It might be too "
+"complex, or the database might be under heavy load."
 msgstr ""
-"%(subtitle)s\n"
-"Возможные причины:\n"
-" %(issue)s"
+"Запрос был прерван после %(sqllab_timeout)s секунд. Он мог быть слишком "
+"сложным, или база данных находилась под большой нагрузкой."
 
 #, fuzzy, python-format
 msgid "%(suggestion)s instead of \"%(undefinedParameter)s?\""
@@ -11999,8 +11975,269 @@ msgid "Time grain"
 msgstr "Шаг времени"
 
 #, fuzzy
-msgid "Time grain filter plugin"
-msgstr "Период времени"
+msgid ""
+"Whether to colorize numeric values by whether they are positive or "
+"negative"
+msgstr "Окрашивать ячейки с числами в зависимости от их знака"
+
+#: superset-frontend/plugins/plugin-chart-table/src/controlPanel.tsx:408
+#: superset-frontend/src/explore/components/controls/ColumnConfigControl/constants.tsx:115
+msgid "Whether to display a bar chart background in table columns"
+msgstr "Отображать гистограмм в колонках таблицы"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Waterfall/controlPanel.tsx:58
+#: superset-frontend/plugins/plugin-chart-echarts/src/controls.tsx:44
+msgid "Whether to display a legend for the chart"
+msgstr "Отображать легенду для графика"
+
+#: superset-frontend/plugins/legacy-plugin-chart-world-map/src/controlPanel.ts:83
+msgid "Whether to display bubbles on top of countries"
+msgstr "Отображать пузыри поверх стран"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Pie/controlPanel.tsx:194
+#: superset-frontend/plugins/plugin-chart-echarts/src/Sunburst/controlPanel.tsx:102
+msgid "Whether to display the aggregate count"
+msgstr "Отображать совокупное количество"
+
+#: superset-frontend/plugins/legacy-plugin-chart-parallel-coordinates/src/controlPanel.ts:49
+msgid "Whether to display the interactive data table"
+msgstr "Отображать интерактивную таблицу с данными"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Funnel/controlPanel.tsx:186
+#: superset-frontend/plugins/plugin-chart-echarts/src/Pie/controlPanel.tsx:152
+#: superset-frontend/plugins/plugin-chart-echarts/src/Radar/controlPanel.tsx:96
+#: superset-frontend/plugins/plugin-chart-echarts/src/Sunburst/controlPanel.tsx:75
+#: superset-frontend/plugins/plugin-chart-echarts/src/Treemap/controlPanel.tsx:73
+msgid "Whether to display the labels."
+msgstr "Отображать метки"
+
+#: superset-frontend/plugins/legacy-preset-chart-nvd3/src/Pie/controlPanel.ts:97
+#, fuzzy
+msgid ""
+"Whether to display the labels. Note that the label only displays when the"
+" 5% threshold."
+msgstr ""
+"Отображать метки. Обратите внимание, что метка отображается только при "
+"достижении порогового значения 5%."
+
+#: superset-frontend/plugins/legacy-plugin-chart-calendar/src/controlPanel.ts:161
+#: superset-frontend/plugins/legacy-plugin-chart-heatmap/src/controlPanel.tsx:281
+#: superset-frontend/plugins/legacy-plugin-chart-histogram/src/controlPanel.ts:116
+#: superset-frontend/plugins/legacy-preset-chart-nvd3/src/NVD3Controls.tsx:160
+msgid "Whether to display the legend (toggles)"
+msgstr "Отображать легенду (переключатель)"
+
+#: superset-frontend/plugins/legacy-plugin-chart-calendar/src/controlPanel.ts:185
+msgid "Whether to display the metric name as a title"
+msgstr "Отображать имя меры как названия"
+
+#: superset-frontend/plugins/legacy-preset-chart-nvd3/src/NVD3Controls.tsx:294
+msgid "Whether to display the min and max values of the X-axis"
+msgstr "Отображать минимальное и максимальное значение на оси X"
+
+#: superset-frontend/plugins/legacy-preset-chart-nvd3/src/NVD3Controls.tsx:102
+#: superset-frontend/plugins/legacy-preset-chart-nvd3/src/NVD3Controls.tsx:113
+msgid "Whether to display the min and max values of the Y-axis"
+msgstr "Отображать минимальное и максимальное значение на оси Y"
+
+#: superset-frontend/plugins/legacy-plugin-chart-calendar/src/controlPanel.ts:171
+#: superset-frontend/plugins/legacy-plugin-chart-heatmap/src/controlPanel.tsx:307
+#: superset-frontend/plugins/plugin-chart-echarts/src/MixedTimeseries/controlPanel.tsx:194
+msgid "Whether to display the numerical values within the cells"
+msgstr "Отображение числовых значений в ячейках"
+
+#: superset-frontend/plugins/legacy-preset-chart-deckgl/src/utilities/Shared_DeckGL.jsx:262
+msgid "Whether to display the stroke"
+msgstr "Отображение обводки"
+
+#: superset-frontend/plugins/legacy-preset-chart-nvd3/src/NVD3Controls.tsx:149
+msgid "Whether to display the time range interactive selector"
+msgstr "Отображение интерактивного селектора временного интервала"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/BigNumber/BigNumberWithTrendline/controlPanel.tsx:79
+msgid "Whether to display the timestamp"
+msgstr "Отображение временную метку"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Funnel/controlPanel.tsx:198
+#, fuzzy
+msgid "Whether to display the tooltip labels."
+msgstr "Отображать метки"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/BigNumber/BigNumberWithTrendline/controlPanel.tsx:91
+msgid "Whether to display the trend line"
+msgstr "Отображение трендовой линии"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Graph/controlPanel.tsx:170
+#: superset-frontend/plugins/plugin-chart-echarts/src/Tree/controlPanel.tsx:277
+msgid "Whether to enable changing graph position and scaling."
+msgstr ""
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Graph/controlPanel.tsx:144
+msgid "Whether to enable node dragging in force layout mode."
+msgstr "Включить перемещение вершин в режиме силового алгоритма."
+
+#: superset-frontend/plugins/legacy-preset-chart-deckgl/src/utilities/Shared_DeckGL.jsx:251
+msgid "Whether to fill the objects"
+msgstr "Использовать заливку для объектов"
+
+#: superset-frontend/plugins/legacy-preset-chart-deckgl/src/utilities/Shared_DeckGL.jsx:90
+msgid "Whether to ignore locations that are null"
+msgstr "Игнорировать местоположения, которые не содержат данных о расположении"
+
+#: superset-frontend/plugins/plugin-chart-table/src/controlPanel.tsx:398
+msgid "Whether to include a client-side search box"
+msgstr "Отображение строки поиска"
+
+#: superset-frontend/plugins/legacy-plugin-chart-heatmap/src/controlPanel.tsx:292
+msgid "Whether to include the percentage in the tooltip"
+msgstr "Отображение процентной доли во всплывающей подсказке"
+
+#: superset-frontend/plugins/plugin-chart-handlebars/src/plugin/controls/includeTime.ts:28
+msgid "Whether to include the time granularity as defined in the time section"
+msgstr ""
+"Добавляет столбец даты/времени с группировкой дат, как определено в "
+"разделе Время"
+
+#: superset-frontend/plugins/legacy-preset-chart-deckgl/src/utilities/Shared_DeckGL.jsx:274
+msgid "Whether to make the grid 3D"
+msgstr "Сделать сетку 3D"
+
+#: superset-frontend/plugins/legacy-plugin-chart-histogram/src/controlPanel.ts:139
+msgid "Whether to make the histogram cumulative"
+msgstr "Сделать гистограмму нарастающей"
+
+#: superset/connectors/sqla/views.py:104
+msgid ""
+"Whether to make this column available as a [Time Granularity] option, "
+"column has to be DATETIME or DATETIME-like"
+msgstr ""
+
+#: superset-frontend/plugins/legacy-plugin-chart-histogram/src/controlPanel.ts:127
+msgid "Whether to normalize the histogram"
+msgstr "Нормализовать гистограмму"
+
+#: superset-frontend/src/components/Datasource/DatasourceEditor.jsx:905
+msgid "Whether to populate autocomplete filters options"
+msgstr "Распространить настройки фильтров автозаполнения"
+
+#: superset/connectors/sqla/views.py:359
+msgid ""
+"Whether to populate the filter's dropdown in the explore view's filter "
+"section with a list of distinct values fetched from the backend on the "
+"fly"
+msgstr ""
+
+#: superset-frontend/plugins/legacy-preset-chart-nvd3/src/NVD3Controls.tsx:171
+#: superset-frontend/plugins/plugin-chart-echarts/src/Timeseries/Area/controlPanel.tsx:132
+msgid ""
+"Whether to show extra controls or not. Extra controls include things like"
+" making mulitBar charts stacked or side by side."
+msgstr ""
+"Отображает дополнительные элементы управления на самом графике и "
+"позволяет менять отображение столбцов: без накопления и с ним."
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Gauge/controlPanel.tsx:203
+msgid "Whether to show minor ticks on the axis"
+msgstr "Отображение мелких отметок на оси"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Gauge/controlPanel.tsx:176
+msgid "Whether to show the pointer"
+msgstr "Отображение указателя"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Gauge/controlPanel.tsx:242
+msgid "Whether to show the progress of gauge chart"
+msgstr ""
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Gauge/controlPanel.tsx:215
+msgid "Whether to show the split lines on the axis"
+msgstr "Отображение линий разделения на оси"
+
+#: superset-frontend/packages/superset-ui-chart-controls/src/shared-controls/customControls.tsx:155
+#: superset-frontend/packages/superset-ui-chart-controls/src/shared-controls/customControls.tsx:208
+#, fuzzy
+msgid "Whether to sort ascending or descending on the base Axis."
+msgstr "Сортировка по убыванию или по возрастанию для оси X"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/MixedTimeseries/controlPanel.tsx:107
+#: superset-frontend/plugins/plugin-chart-handlebars/src/plugin/controls/orderBy.tsx:48
+#: superset-frontend/plugins/plugin-chart-pivot-table/src/plugin/controlPanel.tsx:155
+msgid "Whether to sort descending or ascending"
+msgstr "Сортировка по убыванию или по возрастанию"
+
+#: superset-frontend/plugins/legacy-preset-chart-nvd3/src/Bar/controlPanel.ts:75
+msgid "Whether to sort descending or ascending if a series limit is present"
+msgstr ""
+"Сортировка по убыванию или по возрастанию, если есть ограничение на "
+"количество категорий"
+
+#: superset-frontend/plugins/legacy-plugin-chart-chord/src/controlPanel.ts:42
+#: superset-frontend/plugins/legacy-plugin-chart-heatmap/src/controlPanel.tsx:74
+#: superset-frontend/plugins/legacy-plugin-chart-sankey/src/controlPanel.ts:58
+#: superset-frontend/plugins/legacy-plugin-chart-world-map/src/controlPanel.ts:63
+#: superset-frontend/plugins/plugin-chart-echarts/src/Funnel/controlPanel.tsx:69
+#: superset-frontend/plugins/plugin-chart-echarts/src/Gauge/controlPanel.tsx:63
+#: superset-frontend/plugins/plugin-chart-echarts/src/Pie/controlPanel.tsx:62
+#: superset-frontend/plugins/plugin-chart-echarts/src/Sunburst/controlPanel.tsx:52
+#: superset-frontend/plugins/plugin-chart-echarts/src/Treemap/controlPanel.tsx:50
+#: superset-frontend/plugins/plugin-chart-word-cloud/src/plugin/controlPanel.ts:41
+msgid "Whether to sort results by the selected metric in descending order."
+msgstr "Сортировка результатов по выбранной мере в порядке убывания"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/controls.tsx:206
+msgid "Whether to sort tooltip by the selected metric in descending order."
+msgstr "Сортировка выбранных мер по убыванию во всплывающей подсказке"
+
+#: superset-frontend/packages/superset-ui-chart-controls/src/shared-controls/sharedControls.tsx:363
+msgid "Whether to truncate metrics"
+msgstr ""
+"Убирает меру (например, AVG(...)) с легенды рядом с именем измерения и из"
+" таблицы результатов"
+
+#: superset-frontend/plugins/legacy-plugin-chart-country-map/src/controlPanel.ts:42
+msgid "Which country to plot the map for?"
+msgstr "Выбор страны для графика"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/Tree/controlPanel.tsx:195
+msgid "Which relatives to highlight on hover"
+msgstr "Подсвечивается при наведении"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/BoxPlot/controlPanel.ts:88
+msgid "Whisker/outlier options"
+msgstr "Настройки усов/выбросов"
+
+#: superset-frontend/src/dashboard/util/backgroundStyleOptions.ts:30
+msgid "White"
+msgstr "Белый"
+
+#: superset-frontend/src/explore/components/controls/TimeSeriesColumnControl/index.jsx:228
+#: superset-frontend/src/explore/components/controls/TimeSeriesColumnControl/index.jsx:234
+msgid "Width"
+msgstr "Ширина"
+
+#: superset-frontend/packages/superset-ui-chart-controls/src/sections/forecastInterval.tsx:73
+msgid "Width of the confidence interval. Should be between 0 and 1"
+msgstr "Ширина доверительного интервала. Должна быть между 0 и 1"
+
+#: superset-frontend/src/explore/components/controls/TimeSeriesColumnControl/index.jsx:229
+msgid "Width of the sparkline"
+msgstr "Ширина спарклайна"
+
+#: superset/utils/pandas_postprocessing/rolling.py:69
+msgid "Window must be > 0"
+msgstr "Окно должно быть > 0"
+
+#: superset-frontend/plugins/plugin-chart-echarts/src/BigNumber/BigNumberTotal/index.ts:36
+msgid "With a subheader"
+msgstr "С подзаголовком"
+
+#: superset-frontend/plugins/plugin-chart-word-cloud/src/legacyPlugin/index.ts:29
+#: superset-frontend/plugins/plugin-chart-word-cloud/src/plugin/index.ts:39
+msgid "Word Cloud"
+msgstr "Облако слов"
+
+#: superset-frontend/plugins/plugin-chart-word-cloud/src/plugin/controlPanel.ts:82
+msgid "Word Rotation"
+msgstr "Поворот текста"
 
 msgid "Time grain missing"
 msgstr "Шаг времени отсутствует"
