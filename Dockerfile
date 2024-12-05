@@ -81,6 +81,7 @@ RUN mkdir -p ${PYTHONPATH} superset/static requirements superset-frontend apache
         libpq-dev \
         libecpg-dev \
         libldap2-dev \
+        pkg-config \
     && touch superset/static/version_info.json \
     && chown -R superset:superset ./* \
     && rm -rf /var/lib/apt/lists/*
