@@ -123,6 +123,13 @@ const RowLevelSecurityList = lazy(
     ),
 );
 
+const ApiKeyList = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "ApiKeyList" */ 'src/pages/ApiKeyList'
+    ),
+);
+
 type Routes = {
   path: string;
   Component: ComponentType;
@@ -224,6 +231,10 @@ export const routes: Routes = [
   {
     path: '/sqllab/',
     Component: SqlLab,
+  },
+  {
+    path: '/apikeys/',
+    Component: ApiKeyList,
   },
 ];
 

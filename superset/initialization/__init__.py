@@ -125,6 +125,7 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
         from superset.advanced_data_type.api import AdvancedDataTypeRestApi
         from superset.annotation_layers.annotations.api import AnnotationRestApi
         from superset.annotation_layers.api import AnnotationLayerRestApi
+        from superset.api_key.views import ApiKeysView
         from superset.async_events.api import AsyncEventsRestApi
         from superset.available_domains.api import AvailableDomainsRestApi
         from superset.cachekeys.api import CacheRestApi
@@ -397,6 +398,16 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
             category_icon="",
             category="Manage",
             category_label=__("Manage"),
+        )
+
+        appbuilder.add_view(
+            ApiKeysView,
+            "API Keys",
+            href="/apikeys/",
+            label=__("API Keys"),
+            category="Security",
+            category_label=__("Security"),
+            icon="fa-lock",
         )
 
         appbuilder.add_view(
