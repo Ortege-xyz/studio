@@ -1,12 +1,13 @@
-import { t } from '@superset-ui/core';
+import { SupersetClient, t } from '@superset-ui/core';
 import Button from 'src/components/Button';
 import SubMenu from 'src/features/home/SubMenu';
 import withToasts, { useToasts } from 'src/components/MessageToasts/withToasts';
 import { Card, Status, Table, TableItem, Text } from './styled';
 import { useState } from 'react';
+import { createErrorHandler } from 'src/views/CRUD/utils';
 
 function ApiKeyList() {
-  const { addSuccessToast } = useToasts();
+  const { addSuccessToast, addDangerToast } = useToasts();
 
   const current_plan = 'Free tier';
   const [keys, setKeys] = useState([
@@ -31,14 +32,32 @@ function ApiKeyList() {
     addSuccessToast('Copied the API Key.');
   };
 
-  const showKey = (index: number) => {
+  function showKey(index: number) {
     const key = keys[index];
     console.log(key);
     key.show = !key.show;
     const newKeys = [...keys];
     newKeys[index] = key;
     setKeys(newKeys);
-  };
+  }
+
+  function handleGenerateNewToken() {
+    return SupersetClient.post({
+      endpoint: `/api/v1/apikeys/`,
+      jsonPayload: {
+        username: '',
+        password: '',
+      },
+    }).then(
+      response => {
+        console.log({ response });
+        addSuccessToast(t(`Created new Token`));
+      },
+      createErrorHandler(errMsg =>
+        addDangerToast(t('There was an issue creating the token: %s', errMsg)),
+      ),
+    );
+  }
 
   return (
     <div>
@@ -61,6 +80,7 @@ function ApiKeyList() {
           buttonStyle="success"
           cta
           style={{ maxWidth: '200px' }}
+          onClick={handleGenerateNewToken}
         >
           {t('Generate JWT Token')}
         </Button>
