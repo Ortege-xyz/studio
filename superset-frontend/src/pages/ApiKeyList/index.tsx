@@ -3,29 +3,31 @@ import Button from 'src/components/Button';
 import SubMenu from 'src/features/home/SubMenu';
 import withToasts, { useToasts } from 'src/components/MessageToasts/withToasts';
 import { Card, Status, Table, TableItem, Text } from './styled';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createErrorHandler } from 'src/views/CRUD/utils';
+import { ApiToken, useGetApiKeysTokens } from './hooks';
+import Loading from 'src/components/Loading';
 
 function ApiKeyList() {
+  const [keys, setKeys] = useState<ApiToken[]>([]);
+  const { isLoading, error, fetchData, result } = useGetApiKeysTokens();
   const { addSuccessToast, addDangerToast } = useToasts();
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    setKeys(result);
+  }, [result]);
+
+  useEffect(() => {
+    if (error) {
+      addDangerToast(error);
+    }
+  }, [error]);
+
   const current_plan = 'Free tier';
-  const [keys, setKeys] = useState([
-    {
-      token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...',
-      created: '2024-03-20',
-      expires: '2024-04-20',
-      status: 'Active',
-      show: false,
-    },
-    {
-      token: 'kJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJKV1...',
-      created: '2024-02-15',
-      expires: '2024-03-15',
-      status: 'Expired',
-      show: false,
-    },
-  ]);
 
   const copyText = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -34,7 +36,6 @@ function ApiKeyList() {
 
   function showKey(index: number) {
     const key = keys[index];
-    console.log(key);
     key.show = !key.show;
     const newKeys = [...keys];
     newKeys[index] = key;
@@ -51,6 +52,7 @@ function ApiKeyList() {
     }).then(
       response => {
         console.log({ response });
+        fetchData();
         addSuccessToast(t(`Created new Token`));
       },
       createErrorHandler(errMsg =>
@@ -106,54 +108,65 @@ function ApiKeyList() {
             </tr>
           </thead>
           <tbody>
-            {keys.map((key, index) => {
-              return (
-                <tr key={index}>
-                  <td>
-                    <TableItem style={{ width: '20vw' }}>
-                      <span>{key.show ? key.token : '********'}</span>
-                    </TableItem>
-                  </td>
-                  <td>
-                    <TableItem>
-                      <Button onClick={() => showKey(index)}>
-                        {key.show ? (
-                          <i className="fa fa-eye-slash" />
-                        ) : (
-                          <i className="fa fa-eye" />
-                        )}
-                      </Button>
-                      <Button onClick={() => copyText(key.token)}>
-                        <i className="fa fa-copy" />
-                        <span>Copy</span>
-                      </Button>
-                      {key.status === 'Active' && (
-                        <Button type="primary" buttonStyle="danger">
-                          <span>Revoke</span>
+            {isLoading ? (
+              <div>
+                <Loading position="inline-centered" />
+                <span>{t('Loading')}</span>
+              </div>
+            ) : (
+              keys.map((key, index) => {
+                return (
+                  <tr key={index}>
+                    <td style={{ width: '30vw' }}>
+                      <TableItem>
+                        <span>
+                          {key.show
+                            ? `${key.token.substring(0, 71)}...`
+                            : '********'}
+                        </span>
+                      </TableItem>
+                    </td>
+                    <td>
+                      <TableItem>
+                        <Button onClick={() => showKey(index)}>
+                          {key.show ? (
+                            <i className="fa fa-eye-slash" />
+                          ) : (
+                            <i className="fa fa-eye" />
+                          )}
                         </Button>
-                      )}
-                    </TableItem>
-                  </td>
-                  <td>
-                    <TableItem>
-                      <span>{key.created}</span>
-                    </TableItem>
-                  </td>
-                  <td>
-                    <TableItem>
-                      <span>{key.expires}</span>
-                    </TableItem>
-                  </td>
-                  <td>
-                    <TableItem>
-                      <Status active={key.status.toLowerCase() === 'active'}>
-                        <span>{key.status}</span>
-                      </Status>
-                    </TableItem>
-                  </td>
-                </tr>
-              );
-            })}
+                        <Button onClick={() => copyText(key.token)}>
+                          <i className="fa fa-copy" />
+                          <span>Copy</span>
+                        </Button>
+                        {key.status === 'Active' && (
+                          <Button type="primary" buttonStyle="danger">
+                            <span>Revoke</span>
+                          </Button>
+                        )}
+                      </TableItem>
+                    </td>
+                    <td>
+                      <TableItem>
+                        <span>{key.created_at}</span>
+                      </TableItem>
+                    </td>
+                    <td>
+                      <TableItem>
+                        <span>{key.expires_at}</span>
+                      </TableItem>
+                    </td>
+                    <td>
+                      <TableItem>
+                        <Status active={key.status.toLowerCase() === 'active'}>
+                          <span>{key.status}</span>
+                        </Status>
+                      </TableItem>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </Table>
       </Card>

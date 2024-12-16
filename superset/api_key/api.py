@@ -11,7 +11,7 @@ from typing import Any, Dict
 
 from superset.constants import MODEL_API_RW_METHOD_PERMISSION_MAP
 from superset.extensions import event_logger
-from superset.api_key.models import ApiKeyToken
+from superset.api_key.models import ApiKeyToken, ApiKeyTokenFilter
 from superset.views.base_api import (
     BaseSupersetModelRestApi,
     requires_json,
@@ -25,6 +25,7 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
     class_permission_name = "ApiKeysRestApi"
     openapi_spec_tag = "ApiKeys"
     datamodel = SQLAInterface(ApiKeyToken)
+    base_filters = [["user_id", ApiKeyTokenFilter, lambda: []]]
     
     # Keycloak config
     KEYCLOAK_CONFIG = {
@@ -37,8 +38,9 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
     allow_browser_login = True
     method_permission_name = MODEL_API_RW_METHOD_PERMISSION_MAP
     
-    list_columns = ["id", "user_id", "created_at", "expires_at"]
-    show_columns = ["id", "user_id", "token", "created_at", "expires_at"]
+    list_columns = ["created_at", "expires_at", "token"]
+    show_columns = ["token", "created_at", "expires_at"]
+    order_columns = ["created_at", "expires_at"]
     
     def generate_token(self, username: str, password: str) -> tuple:
         """Generate new Token for Keycloak"""
