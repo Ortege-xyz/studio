@@ -2,6 +2,7 @@ import { SupersetClient } from '@superset-ui/core';
 import { useCallback, useState } from 'react';
 
 export interface ApiToken {
+  id: number;
   token: string;
   created_at: string;
   expires_at: string;

@@ -42,7 +42,22 @@ function ApiKeyList() {
     setKeys(newKeys);
   }
 
-  function handleGenerateNewToken() {
+  function onDeleteToken(id: number) {
+    return SupersetClient.delete({
+      endpoint: `/api/v1/apikeys/${id}`,
+    }).then(
+      () => {
+        addSuccessToast(t(`Deleted token`));
+        fetchData();
+      },
+      createErrorHandler(errMsg => {
+        addDangerToast(t('There was an issue deleting the token: %s', errMsg));
+        fetchData();
+      }),
+    );
+  }
+
+  function onCreateNewToken() {
     return SupersetClient.post({
       endpoint: `/api/v1/apikeys/`,
       jsonPayload: {
@@ -50,14 +65,24 @@ function ApiKeyList() {
         password: '',
       },
     }).then(
-      response => {
-        console.log({ response });
-        fetchData();
+      () => {
         addSuccessToast(t(`Created new Token`));
+        fetchData();
       },
-      createErrorHandler(errMsg =>
-        addDangerToast(t('There was an issue creating the token: %s', errMsg)),
-      ),
+      createErrorHandler(errMsg => {
+        let message = null;
+        if (
+          typeof errMsg === 'string' &&
+          errMsg?.startsWith('Error to generate new token:')
+        ) {
+          message = JSON.parse(
+            errMsg.split('Error to generate new token: ')[1],
+          ).error_description;
+        } else {
+          message = errMsg;
+        }
+        addDangerToast(t('There was an issue creating the token: %s', message));
+      }),
     );
   }
 
@@ -82,7 +107,7 @@ function ApiKeyList() {
           buttonStyle="success"
           cta
           style={{ maxWidth: '200px' }}
-          onClick={handleGenerateNewToken}
+          onClick={onCreateNewToken}
         >
           {t('Generate JWT Token')}
         </Button>
@@ -142,6 +167,15 @@ function ApiKeyList() {
                         {key.status === 'Active' && (
                           <Button type="primary" buttonStyle="danger">
                             <span>Revoke</span>
+                          </Button>
+                        )}
+                        {key.status === 'Expired' && (
+                          <Button
+                            type="primary"
+                            buttonStyle="danger"
+                            onClick={() => onDeleteToken(key.id)}
+                          >
+                            <span>Delete</span>
                           </Button>
                         )}
                       </TableItem>
