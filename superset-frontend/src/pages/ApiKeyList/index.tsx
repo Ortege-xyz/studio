@@ -42,6 +42,21 @@ function ApiKeyList() {
     setKeys(newKeys);
   }
 
+  function onRevokeToken(id: number) {
+    return SupersetClient.post({
+      endpoint: `/api/v1/apikeys/revoke/${id}`,
+    }).then(
+      () => {
+        addSuccessToast(t(`Revoked token`));
+        fetchData();
+      },
+      createErrorHandler(errMsg => {
+        addDangerToast(t('There was an issue revoking the token: %s', errMsg));
+        fetchData();
+      }),
+    );
+  }
+
   function onDeleteToken(id: number) {
     return SupersetClient.delete({
       endpoint: `/api/v1/apikeys/${id}`,
@@ -165,7 +180,11 @@ function ApiKeyList() {
                           <span>Copy</span>
                         </Button>
                         {key.status === 'Active' && (
-                          <Button type="primary" buttonStyle="danger">
+                          <Button
+                            type="primary"
+                            buttonStyle="danger"
+                            onClick={() => onRevokeToken(key.id)}
+                          >
                             <span>Revoke</span>
                           </Button>
                         )}

@@ -9,7 +9,7 @@ from flask_appbuilder.models.sqla.interface import SQLAInterface
 from superset import app, db
 from typing import Any, Dict
 
-from superset.constants import MODEL_API_RW_METHOD_PERMISSION_MAP
+from superset.constants import MODEL_API_RW_METHOD_PERMISSION_MAP, RouteMethod
 from superset.extensions import event_logger
 from superset.api_key.models import ApiKeyToken, ApiKeyTokenFilter
 from superset.views.base_api import (
@@ -36,14 +36,21 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
     }
 
     allow_browser_login = True
-    method_permission_name = MODEL_API_RW_METHOD_PERMISSION_MAP
+
+    include_route_methods = RouteMethod.REST_MODEL_VIEW_CRUD_SET | {
+        "revoke_token_post",
+    }
+
+    method_permission_name = MODEL_API_RW_METHOD_PERMISSION_MAP | {
+        "revoke_token_post": "write",
+    }
     
     list_columns = ["token", "created_at", "expires_at", "id"]
     show_columns = ["token", "created_at", "expires_at", "id"]
     order_columns = ["created_at", "expires_at"]
     
     def generate_token(self, username: str, password: str) -> tuple:
-        """Generate new Token for Keycloak"""
+        """Generate new Token for Keycloak."""
         try:
             token_url = f"{self.KEYCLOAK_CONFIG['url']}/realms/{self.KEYCLOAK_CONFIG['realm']}/protocol/openid-connect/token"
             
@@ -74,6 +81,32 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
             logger.error(f"Error to generate new token: {str(e)}")
             raise
 
+    def revoke_token(self, token, token_type_hint=None):
+        """Revoke a Keycloak access token."""
+        try:
+            revoke_url = f"{self.KEYCLOAK_CONFIG['url']}/realms/{self.KEYCLOAK_CONFIG['realm']}/protocol/openid-connect/revoke"
+
+            data = {
+                "token": token,
+                "client_id": self.KEYCLOAK_CONFIG['client_id'],
+                "client_secret": self.KEYCLOAK_CONFIG['client_secret']
+            }
+
+            if token_type_hint:
+                data["token_type_hint"] = token_type_hint
+
+            response = requests.post(revoke_url, data=data)
+
+            if response.status_code != 200:
+                error_message = f"Error revoking token: {response.text}"
+                logger.error(error_message)
+                raise Exception(error_message)
+
+            logger.debug(f"Token revoked successfully.")
+        except Exception as e:
+            logger.exception(f"Error revoking token: {str(e)}")
+            raise
+
     @expose("/<int:pk>", methods=("GET",))
     @protect()
     @safe
@@ -81,7 +114,7 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
     def get(self, pk: int) -> Dict[str, Any]:
         """Get specific API key details"""
         try:    
-            token = self.datamodel.get(pk)
+            token: ApiKeyToken = self.datamodel.get(pk)
 
             if not token:
                 return self.response_404()
@@ -166,7 +199,7 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
                 description: Internal server error
         """
         try:
-            token = self.datamodel.get(pk)
+            token: ApiKeyToken = self.datamodel.get(pk)
 
             if not token:
                 return self.response_404()
@@ -183,5 +216,40 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
 
             return self.response(200, **response)
         except Exception as e:
+            db.session.rollback()
+            return self.response_500(message=str(e))
+
+    @expose("/revoke/<pk>", methods=("POST",))
+    @protect()
+    @safe
+    @statsd_metrics
+    @event_logger.log_this_with_context(
+        action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
+        f".revoke_token_post",
+        log_to_statsd=False,
+    )
+    def revoke_token_post(self, pk: int) -> Response:
+        try:
+            print(f"pk {pk}")
+            token: ApiKeyToken = self.datamodel.get(pk)
+            print(f"{token.user_id}, {g.user.id}")
+            if not token:
+                return self.response_404()
+            
+            if token.user_id != g.user.id:
+                return self.response_403()
+
+            self.revoke_token(token.token)
+
+            db.session.delete(token)
+            db.session.commit()
+
+            response = {
+                "message": "Token revoked successfully"
+            }
+
+            return self.response(200, **response)
+        except Exception as e:
             print(e)
+            db.session.rollback()
             return self.response_500(message=str(e))
