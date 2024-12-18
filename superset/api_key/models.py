@@ -13,7 +13,7 @@ class ApiKeyToken(Model):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('ab_user.id'), nullable=False)
     token = Column(String(2000), nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.now())
     expires_at = Column(DateTime, nullable=False)
 
     # Create a foreign key with the active user 

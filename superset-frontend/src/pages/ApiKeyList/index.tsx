@@ -201,12 +201,12 @@ function ApiKeyList() {
                     </td>
                     <td>
                       <TableItem>
-                        <span>{key.created_at}</span>
+                        <span>{new Date(key.created_at).toLocaleString()} </span>
                       </TableItem>
                     </td>
                     <td>
                       <TableItem>
-                        <span>{key.expires_at}</span>
+                        <span>{new Date(key.expires_at).toLocaleString()}</span>
                       </TableItem>
                     </td>
                     <td>
