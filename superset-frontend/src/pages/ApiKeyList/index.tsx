@@ -2,7 +2,14 @@ import { SupersetClient, t } from '@superset-ui/core';
 import Button from 'src/components/Button';
 import SubMenu from 'src/features/home/SubMenu';
 import withToasts, { useToasts } from 'src/components/MessageToasts/withToasts';
-import { Card, Status, Table, TableItem, Text } from './styled';
+import {
+  Card,
+  CenteredContainer,
+  Status,
+  Table,
+  TableItem,
+  Text,
+} from './styled';
 import { useCallback, useEffect, useState } from 'react';
 import { createErrorHandler } from 'src/views/CRUD/utils';
 import { ApiToken, useGetApiKeysTokens } from './hooks';
@@ -128,12 +135,7 @@ function ApiKeyList() {
             </tr>
           </thead>
           <tbody>
-            {isLoading ? (
-              <div>
-                <Loading position="inline-centered" />
-                <span>{t('Loading')}</span>
-              </div>
-            ) : (
+            {!isLoading &&
               keys.map((key, index) => {
                 return (
                   <tr key={index}>
@@ -181,16 +183,12 @@ function ApiKeyList() {
                     </td>
                     <td>
                       <TableItem>
-                        <span>
-                          {new Date(key.created_at).toLocaleString()}
-                        </span>
+                        <span>{new Date(key.created_at).toLocaleString()}</span>
                       </TableItem>
                     </td>
                     <td>
                       <TableItem>
-                        <span>
-                          {new Date(key.expires_at).toLocaleString()}
-                        </span>
+                        <span>{new Date(key.expires_at).toLocaleString()}</span>
                       </TableItem>
                     </td>
                     <td>
@@ -202,10 +200,20 @@ function ApiKeyList() {
                     </td>
                   </tr>
                 );
-              })
-            )}
+              })}
           </tbody>
         </Table>
+        {isLoading && (
+          <CenteredContainer>
+            <Loading position="normal" />
+            <Text>{t('Loading')}</Text>
+          </CenteredContainer>
+        )}
+        {keys.length === 0 && !isLoading && (
+          <CenteredContainer>
+            <Text>{t('Not found.')}</Text>
+          </CenteredContainer>
+        )}
       </Card>
     </div>
   );

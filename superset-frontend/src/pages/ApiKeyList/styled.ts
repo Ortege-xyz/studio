@@ -59,3 +59,11 @@ export const Status = styled.div<{ active?: boolean }>`
   background-color: ${({ theme, active }) =>
     active ? theme.colors.success.base : theme.colors.error.base};
 `;
+
+export const CenteredContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+`
