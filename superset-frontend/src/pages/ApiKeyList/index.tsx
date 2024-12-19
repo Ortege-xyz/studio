@@ -3,12 +3,14 @@ import Button from 'src/components/Button';
 import SubMenu from 'src/features/home/SubMenu';
 import withToasts, { useToasts } from 'src/components/MessageToasts/withToasts';
 import { Card, Status, Table, TableItem, Text } from './styled';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createErrorHandler } from 'src/views/CRUD/utils';
 import { ApiToken, useGetApiKeysTokens } from './hooks';
 import Loading from 'src/components/Loading';
+import { GenerateTokenModal } from './generateToken Modal';
 
 function ApiKeyList() {
+  const [showModal, setShowModal] = useState(false);
   const [keys, setKeys] = useState<ApiToken[]>([]);
   const { isLoading, error, fetchData, result } = useGetApiKeysTokens();
   const { addSuccessToast, addDangerToast } = useToasts();
@@ -43,66 +45,44 @@ function ApiKeyList() {
   }
 
   function onRevokeToken(id: number) {
-    return SupersetClient.post({
+    SupersetClient.post({
       endpoint: `/api/v1/apikeys/revoke/${id}`,
     }).then(
       () => {
         addSuccessToast(t(`Revoked token`));
-        fetchData();
       },
       createErrorHandler(errMsg => {
         addDangerToast(t('There was an issue revoking the token: %s', errMsg));
-        fetchData();
       }),
     );
+    fetchData();
   }
 
   function onDeleteToken(id: number) {
-    return SupersetClient.delete({
+    SupersetClient.delete({
       endpoint: `/api/v1/apikeys/${id}`,
     }).then(
       () => {
         addSuccessToast(t(`Deleted token`));
-        fetchData();
       },
       createErrorHandler(errMsg => {
         addDangerToast(t('There was an issue deleting the token: %s', errMsg));
-        fetchData();
       }),
     );
+    fetchData();
   }
 
-  function onCreateNewToken() {
-    return SupersetClient.post({
-      endpoint: `/api/v1/apikeys/`,
-      jsonPayload: {
-        username: '',
-        password: '',
-      },
-    }).then(
-      () => {
-        addSuccessToast(t(`Created new Token`));
-        fetchData();
-      },
-      createErrorHandler(errMsg => {
-        let message = null;
-        if (
-          typeof errMsg === 'string' &&
-          errMsg?.startsWith('Error to generate new token:')
-        ) {
-          message = JSON.parse(
-            errMsg.split('Error to generate new token: ')[1],
-          ).error_description;
-        } else {
-          message = errMsg;
-        }
-        addDangerToast(t('There was an issue creating the token: %s', message));
-      }),
-    );
-  }
+  const onHide = useCallback(() => {
+    setShowModal(false);
+  }, [setShowModal]);
 
   return (
     <div>
+      <GenerateTokenModal
+        show={showModal}
+        onHide={onHide}
+        refetchData={fetchData}
+      />
       <SubMenu name={t('Api Keys Management')} />
       <Card>
         <Text>
@@ -122,7 +102,7 @@ function ApiKeyList() {
           buttonStyle="success"
           cta
           style={{ maxWidth: '200px' }}
-          onClick={onCreateNewToken}
+          onClick={() => setShowModal(true)}
         >
           {t('Generate JWT Token')}
         </Button>
@@ -201,12 +181,16 @@ function ApiKeyList() {
                     </td>
                     <td>
                       <TableItem>
-                        <span>{new Date(key.created_at).toLocaleString()} </span>
+                        <span>
+                          {new Date(key.created_at).toLocaleString()}
+                        </span>
                       </TableItem>
                     </td>
                     <td>
                       <TableItem>
-                        <span>{new Date(key.expires_at).toLocaleString()}</span>
+                        <span>
+                          {new Date(key.expires_at).toLocaleString()}
+                        </span>
                       </TableItem>
                     </td>
                     <td>
