@@ -230,9 +230,7 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
     )
     def revoke_token_post(self, pk: int) -> Response:
         try:
-            print(f"pk {pk}")
             token: ApiKeyToken = self.datamodel.get(pk)
-            print(f"{token.user_id}, {g.user.id}")
             if not token:
                 return self.response_404()
             
@@ -250,6 +248,5 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
 
             return self.response(200, **response)
         except Exception as e:
-            print(e)
             db.session.rollback()
             return self.response_500(message=str(e))
