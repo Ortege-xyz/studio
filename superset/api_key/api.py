@@ -112,7 +112,32 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
     @safe
     @statsd_metrics
     def get(self, pk: int) -> Dict[str, Any]:
-        """Get specific API key details"""
+        """Get specific API key details.
+        ---
+        get:
+            summary: Get specific API key details
+            parameters:
+            - in: path
+              name: pk
+              schema:
+                type: integer
+              required: true
+            responses:
+              200:
+                description: API key details retrieved
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ApiKeyToken'
+              401:
+                $ref: '#/components/responses/401'
+              403:
+                $ref: '#/components/responses/403'
+              404:
+                $ref: '#/components/responses/404'
+              500:
+                $ref: '#/components/responses/500'
+        """
         try:    
             token: ApiKeyToken = self.datamodel.get(pk)
 
@@ -136,7 +161,44 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
         log_to_statsd=False,
     )
     def post(self) -> Response:
-        """Endpoint to create a new token"""
+        """Create new token.
+        ---
+        post:
+            summary: Create new API key token
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - username
+                                - password
+                            properties:
+                                username:
+                                    type: string
+                                password:
+                                    type: string
+            responses:
+                200:
+                    description: API key created
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                                    result:
+                                        $ref: '#/components/schemas/ApiKeyToken'
+                401:
+                    $ref: '#/components/responses/401'
+                403:
+                    $ref: '#/components/responses/403'
+                422:
+                    $ref: '#/components/responses/422'
+                500:
+                    $ref: '#/components/responses/500'
+        """
         if not request.is_json:
             return self.response_400(message="Request should be JSON")
         try:
@@ -177,26 +239,34 @@ class ApiKeysRestApi(BaseSupersetModelRestApi):
     @safe
     @statsd_metrics
     def delete(self, pk: int) -> Response:
-        """Deletes an API Key
+        """Delete an API key.
         ---
         delete:
-            description: >-
-            Delete an API Key based on provided token id
+            summary: Delete an API key
             parameters:
             - in: path
-            name: pk
-            schema:
-                type: string
-            required: true
+              name: pk
+              schema:
+                type: integer
+              required: true
             responses:
-            200:
-                description: API Key deleted
-            403:
-                description: Unauthorized
-            404:
-                description: API Key not found
-            500:
-                description: Internal server error
+                200:
+                    description: API key deleted
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                401:
+                    $ref: '#/components/responses/401'
+                403:
+                    $ref: '#/components/responses/403'
+                404:
+                    $ref: '#/components/responses/404'
+                500:
+                    $ref: '#/components/responses/500'
         """
         try:
             token: ApiKeyToken = self.datamodel.get(pk)
